@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的极简博客</title>
     
-    <link rel="icon" type="image/png" href="zijunlogo.png">
+    <link rel="icon" type="image/png" href="bblogo.png">
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <style>
-        /* 1. 视频背景：完美居中且全屏覆盖 */
+        /* 视频背景：完美居中且全屏覆盖 */
         #video-background {
             position: fixed;
             top: 50%;
@@ -40,7 +40,7 @@
             box-sizing: border-box;
         }
 
-        /* 2. 顶栏样式：毛玻璃效果 */
+        /* 顶栏样式：毛玻璃效果 */
         .header {
             display: flex;
             align-items: center;
@@ -63,7 +63,7 @@
 
         h1 { margin: 0; font-size: 1.3rem; letter-spacing: 0.5px; color: #1a1a1a; }
 
-        /* 3. 文章卡片样式 */
+        /* 文章卡片样式 */
         .post { 
             background: rgba(255, 255, 255, 0.9); 
             padding: 30px;
@@ -78,7 +78,7 @@
         .post h2 { margin-top: 0; color: #0056b3; font-size: 1.6rem; line-height: 1.3; }
         .post small { color: #777; display: block; margin-bottom: 20px; font-weight: 500; }
 
-        /* 4. 媒体内容自动适配 (图片、视频、音频) */
+        /* 媒体内容自动适配 (图片、视频、音频) */
         .content img, .content video { 
             max-width: 100%;    
             height: auto !important; 
@@ -93,7 +93,6 @@
             margin: 15px 0;
         }
 
-        /* 响应式适配 */
         @media (max-width: 500px) {
             .main-container { padding: 20px 15px; }
             .post { padding: 20px; border-radius: 18px; }
@@ -109,7 +108,7 @@
 
     <div class="main-container">
         <header class="header">
-            <img src="zijunlogo.png" alt="Logo" class="logo">
+            <img src="bblogo.png" alt="Logo" class="logo">
             <h1>我的博客预览</h1>
         </header>
 
@@ -140,16 +139,15 @@
                     const postElement = document.createElement('div');
                     postElement.className = 'post';
                     
-                    // A. 先进行基础的 Markdown 渲染
                     let htmlContent = marked.parse(issue.body || "");
 
-                    // B. 关键：将文本链接自动转换为 视频播放器 (针对 Issue 上传的文件)
+                    // 自动识别视频
                     htmlContent = htmlContent.replace(
                         /<a href="(.*?\.(mp4|webm|mov))".*?>.*?<\/a>/gi, 
                         '<video controls playsinline><source src="$1" type="video/mp4"></video>'
                     );
 
-                    // C. 关键：将文本链接自动转换为 音频播放器
+                    // 自动识别音频
                     htmlContent = htmlContent.replace(
                         /<a href="(.*?\.(mp3|wav|ogg))".*?>.*?<\/a>/gi, 
                         '<audio controls><source src="$1"></audio>'
