@@ -18,11 +18,7 @@
             object-fit: cover; filter: brightness(0.6) contrast(1.1);
         }
 
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            margin: 0; padding: 0; color: #222; background-color: #000;
-        }
-
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; color: #222; background-color: #000; }
         .main-container { max-width: 750px; margin: 0 auto; padding: 40px 20px; }
 
         /* 2. 顶栏 UI */
@@ -47,63 +43,38 @@
         .post h2 { margin-top: 0; color: #0056b3; margin-bottom: 8px; }
         .post small { color: #666; display: block; margin-bottom: 20px; font-family: monospace; }
 
-        /* 4. 右侧悬浮面板 (核心修正处) */
-        .side-panel {
-            position: fixed; right: 30px; top: 120px;
-            display: flex; flex-direction: column; gap: 12px;
-            z-index: 100;
-        }
+        /* 4. 按钮样式 */
+        .side-panel { position: fixed; right: 30px; top: 120px; display: flex; flex-direction: column; gap: 12px; z-index: 100; }
         .side-btn {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 12px 20px; border-radius: 50px;
-            text-decoration: none; color: #333; font-weight: bold;
-            font-size: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            background: rgba(255, 255, 255, 0.9); padding: 12px 20px; border-radius: 50px;
+            text-decoration: none; color: #333; font-weight: bold; font-size: 14px;
             backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5);
-            transition: 0.3s; text-align: center; cursor: pointer;
-            white-space: nowrap; /* 核心：防止文字换行 */
+            transition: 0.3s; text-align: center; cursor: pointer; white-space: nowrap;
         }
-        .side-btn:hover { transform: translateY(-3px); background: #fff; color: #0056b3; }
         .btn-pay { background: #ff4757; color: white; border: none; }
+        
+        .comment-toggle {
+            background: #0056b3; color: white; border: none; padding: 10px 20px;
+            border-radius: 12px; cursor: pointer; font-size: 14px; margin-top: 15px;
+            transition: 0.3s; font-weight: bold;
+        }
+        .comment-toggle:hover { background: #004494; transform: scale(1.02); }
 
-        /* 5. 支付弹窗 */
+        /* 5. 弹窗 */
         #pay-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
             display: none; justify-content: center; align-items: center; z-index: 200;
         }
-        .pay-card {
-            background: white; padding: 15px; border-radius: 24px;
-            position: relative; max-width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
+        .pay-card { background: white; padding: 15px; border-radius: 24px; position: relative; max-width: 90%; }
         .pay-card img { max-width: 320px; width: 100%; display: block; border-radius: 15px; }
-        .close-btn {
-            position: absolute; top: -12px; right: -12px;
-            background: #ff4757; color: white; width: 32px; height: 32px;
-            border-radius: 50%; border: 2px solid white; cursor: pointer; 
-            font-size: 18px; display: flex; align-items: center; justify-content: center;
-        }
+        .close-btn { position: absolute; top: -12px; right: -12px; background: #ff4757; color: white; width: 32px; height: 32px; border-radius: 50%; border: 2px solid white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-        /* 6. 手机端适配 (针对字号大和按钮换行的修正) */
         @media (max-width: 600px) {
-            .side-panel { 
-                position: static; /* 手机端取消固定位置 */
-                flex-direction: row; /* 横向排列 */
-                justify-content: center; 
-                margin-bottom: 25px; 
-                gap: 8px; /* 缩小按钮间距 */
-                padding: 0 10px;
-            }
-            .side-btn {
-                padding: 10px 14px; /* 缩小内边距 */
-                font-size: 12px; /* 减小字号 */
-                flex: 1; /* 让按钮等宽平分 */
-                max-width: 110px; /* 限制最大宽度 */
-            }
-            .header { padding: 10px 15px; margin-bottom: 20px; }
-            h1 { font-size: 1.1rem; }
+            .side-panel { position: static; flex-direction: row; justify-content: center; margin-bottom: 25px; gap: 8px; padding: 0 10px; }
+            .side-btn { padding: 10px 14px; font-size: 11px; flex: 1; max-width: 110px; }
         }
 
-        /* 内容媒体适配 */
         .content img, .content video { max-width: 100% !important; height: auto !important; display: block; margin: 20px 0; border-radius: 12px; }
     </style>
 </head>
@@ -137,13 +108,26 @@
         </div>
     </div>
 
+    <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
+
     <script>
-        function togglePay(show) {
-            document.getElementById('pay-overlay').style.display = show ? 'flex' : 'none';
+        function togglePay(show) { document.getElementById('pay-overlay').style.display = show ? 'flex' : 'none'; }
+
+        // 留言区展开/收起，并强制重绘 Cusdis 界面
+        function toggleComments(id) {
+            const el = document.getElementById(`comment-box-${id}`);
+            const isHidden = el.style.display === 'none';
+            el.style.display = isHidden ? 'block' : 'none';
+            
+            // 如果是展开，尝试通知 Cusdis 渲染
+            if (isHidden && window.renderCusdis) {
+                window.renderCusdis(el.querySelector('#cusdis_thread'));
+            }
         }
 
         const GITHUB_USERNAME = 'aeribare0108';
         const REPO_NAME = 'aeribare0108.github.io';
+        const CUSDIS_APP_ID = 'ba5226e8-dac4-45ae-9acb-27723c830cc0'; // 已经帮你填好 ID
 
         async function fetchPosts() {
             const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/issues?labels=post&state=open`;
@@ -153,7 +137,7 @@
                 const container = document.getElementById('posts-container');
                 
                 if (issues.length === 0) {
-                    container.innerHTML = '<div class="post">📭 喵苗田口草博客暂时还没有文章。</div>';
+                    container.innerHTML = '<div class="post">📭 暂无文章。</div>';
                     return;
                 }
 
@@ -166,11 +150,11 @@
                     const tempDiv = document.createElement('div');
                     tempDiv.innerHTML = htmlContent;
                     
+                    // 媒体转换
                     const links = tempDiv.querySelectorAll('a');
                     links.forEach(link => {
                         const href = link.getAttribute('href');
-                        const isVideo = href.match(/\.(mp4|webm|mov|m4v)/i) || href.includes('user-attachments');
-                        if (isVideo) {
+                        if (href.match(/\.(mp4|webm|mov|m4v)/i) || href.includes('user-attachments')) {
                             const videoTag = document.createElement('video');
                             videoTag.src = href; videoTag.controls = true;
                             videoTag.setAttribute('playsinline', ''); videoTag.style.width = '100%';
@@ -185,6 +169,18 @@
                         <h2>${issue.title}</h2>
                         <small>📅 发布于: ${dateString}</small>
                         <div class="content">${tempDiv.innerHTML}</div>
+                        
+                        <button class="comment-toggle" onclick="toggleComments('${issue.id}')">💬 留言互动</button>
+                        
+                        <div id="comment-box-${issue.id}" style="display:none; margin-top:25px; border-top:1px solid #eee; padding-top:20px;">
+                            <div id="cusdis_thread"
+                                data-host="https://cusdis.com"
+                                data-app-id="${CUSDIS_APP_ID}"
+                                data-page-id="${issue.id}"
+                                data-page-url="${window.location.origin}${window.location.pathname}#${issue.id}"
+                                data-page-title="${issue.title}">
+                            </div>
+                        </div>
                     `;
                     container.appendChild(postElement);
                 });
