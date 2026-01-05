@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>我的极简博客</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+        .post { border-bottom: 1px solid #eee; margin-bottom: 20px; padding-bottom: 20px; }
+        img { max-width: 100%; }
+        .tag { background: #e1f5fe; color: #01579b; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>我的博客预览</h1>
+    <div id="posts-container">正在加载内容...</div>
+
+    <script>
+        // 1. 配置你的信息
+        const GITHUB_USERNAME = '你的用户名';
+        const REPO_NAME = '你的仓库名';
+
+        // 2. 调用 GitHub API 获取 Issues
+        // 过滤条件：state=open (开启状态的 issue), labels=post (带 post 标签的)
+        async function fetchPosts() {
+            const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/issues?labels=post&state=open`;
+            
+            try {
+                const response = await fetch(url);
+                const issues = await response.json();
+                
+                const container = document.getElementById('posts-container');
+                container.innerHTML = ''; // 清空加载提示
+
+                issues.forEach(issue => {
+                    const postElement = document.createElement('div');
+                    postElement.className = 'post';
+                    
+                    // 将 Issue 的 Markdown 正文简单展示（复杂渲染可用 marked.js 库）
+                    postElement.innerHTML = `
+                        <h2>${issue.title}</h2>
+                        <small>发布于: ${new Date(issue.created_at).toLocaleDateString()}</small>
+                        <div class="content">${issue.body.replace(/\n/g, '<br>')}</div>
+                    `;
+                    container.appendChild(postElement);
+                });
+            } catch (error) {
+                console.error('获取内容失败:', error);
+            }
+        }
+
+        fetchPosts();
+    </script>
+</body>
+</html>
