@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <style>
-        /* 视频背景居中 */
+        /* 1. 视频背景 */
         #video-background {
             position: fixed; top: 50%; left: 50%;
             min-width: 100%; min-height: 100%;
@@ -25,7 +25,7 @@
 
         .main-container { max-width: 750px; margin: 0 auto; padding: 40px 20px; }
 
-        /* 顶栏 UI */
+        /* 2. 顶栏 UI */
         .header {
             display: flex; align-items: center;
             background: rgba(255, 255, 255, 0.85); 
@@ -33,27 +33,68 @@
             backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
             margin-bottom: 35px; border: 1px solid rgba(255, 255, 255, 0.4);
         }
-
-        .logo { width: 48px; height: 48px; object-fit: contain; margin-right: 15px; }
+        .logo { width: 48px; height: 48px; object-fit: contain; margin-right: 15px; cursor: pointer; }
         h1 { margin: 0; font-size: 1.3rem; color: #1a1a1a; }
 
-        /* 文章卡片 */
+        /* 3. 文章卡片 */
         .post { 
             background: rgba(255, 255, 255, 0.92); 
             padding: 30px; border-radius: 24px;
             margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
         }
-
         .post h2 { margin-top: 0; color: #0056b3; margin-bottom: 8px; }
         .post small { color: #666; display: block; margin-bottom: 20px; font-family: monospace; }
 
-        /* 媒体适配 */
-        .content img, .content video { 
-            max-width: 100% !important; height: auto !important; 
-            display: block; margin: 20px 0; border-radius: 12px; 
+        /* 4. 右侧悬浮面板 */
+        .side-panel {
+            position: fixed; right: 30px; top: 120px;
+            display: flex; flex-direction: column; gap: 12px;
+            z-index: 100;
         }
-        .content audio { width: 100%; margin: 15px 0; }
+        .side-btn {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 12px 20px; border-radius: 50px;
+            text-decoration: none; color: #333; font-weight: bold;
+            font-size: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5);
+            transition: 0.3s; text-align: center; cursor: pointer;
+        }
+        .side-btn:hover { transform: translateY(-3px); background: #fff; color: #0056b3; }
+        .btn-pay { background: #ff4757; color: white; border: none; }
+        .btn-pay:hover { background: #ff6b81; color: white; }
+
+        /* 5. 支付弹窗 (JPG版本) */
+        #pay-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+            display: none; justify-content: center; align-items: center; z-index: 200;
+        }
+        .pay-card {
+            background: white; padding: 15px; border-radius: 24px;
+            position: relative; max-width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .pay-card img { 
+            max-width: 320px; width: 100%; display: block; 
+            border-radius: 15px; /* 微圆角处理 */
+        }
+        .close-btn {
+            position: absolute; top: -12px; right: -12px;
+            background: #ff4757; color: white; width: 32px; height: 32px;
+            border-radius: 50%; border: 2px solid white; cursor: pointer; 
+            font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center;
+        }
+
+        /* 媒体适配 */
+        .content img, .content video { max-width: 100% !important; height: auto !important; display: block; margin: 20px 0; border-radius: 12px; }
+        
+        @media (max-width: 1000px) {
+            .side-panel { 
+                position: static; flex-direction: row; 
+                justify-content: center; margin-bottom: 25px; padding: 0 20px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -64,22 +105,38 @@
 
     <div class="main-container">
         <header class="header">
-            <img src="bblogo.png" alt="Logo" class="logo">
+            <img src="bblogo.png" alt="Logo" class="logo" onclick="location.reload()">
             <h1>喵苗田口草博客</h1>
         </header>
 
+        <div class="side-panel">
+            <a href="https://xhslink.com/m/8c7qBm5fcST" target="_blank" class="side-btn">📕 小红书</a>
+            <a href="https://www.facebook.com/share/19JhjNVtCH/" target="_blank" class="side-btn">📘 脸书</a>
+            <button onclick="togglePay(true)" class="side-btn btn-pay">☕ 打赏支持</button>
+        </div>
+
+        <div id="pay-overlay" onclick="togglePay(false)">
+            <div class="pay-card" onclick="event.stopPropagation()">
+                <button class="close-btn" onclick="togglePay(false)">×</button>
+                <img src="payment.jpg" alt="Payment QR Code">
+            </div>
+        </div>
+
         <div id="posts-container">
-            <div class="post">🚀 喵喵正在抓取内容...</div>
+            <div class="post">🚀 喵喵正在努力加载内容...</div>
         </div>
     </div>
 
     <script>
+        function togglePay(show) {
+            document.getElementById('pay-overlay').style.display = show ? 'flex' : 'none';
+        }
+
         const GITHUB_USERNAME = 'aeribare0108';
         const REPO_NAME = 'aeribare0108.github.io';
 
         async function fetchPosts() {
             const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/issues?labels=post&state=open`;
-            
             try {
                 const response = await fetch(url);
                 const issues = await response.json();
@@ -96,34 +153,21 @@
                     postElement.className = 'post';
                     
                     let htmlContent = marked.parse(issue.body || "");
-
                     const tempDiv = document.createElement('div');
                     tempDiv.innerHTML = htmlContent;
                     
                     const links = tempDiv.querySelectorAll('a');
                     links.forEach(link => {
                         const href = link.getAttribute('href');
-                        // 增强型检测：如果是 github 附件或者包含视频后缀
-                        const isVideo = href.match(/\.(mp4|webm|mov|m4v)/i) || href.includes('user-attachments') || href.includes('assets');
-                        const isAudio = href.match(/\.(mp3|wav|ogg|m4a)/i);
-
+                        const isVideo = href.match(/\.(mp4|webm|mov|m4v)/i) || href.includes('user-attachments');
                         if (isVideo) {
                             const videoTag = document.createElement('video');
-                            videoTag.src = href;
-                            videoTag.controls = true;
-                            videoTag.setAttribute('playsinline', '');
-                            videoTag.style.width = '100%';
+                            videoTag.src = href; videoTag.controls = true;
+                            videoTag.setAttribute('playsinline', ''); videoTag.style.width = '100%';
                             link.parentNode.replaceChild(videoTag, link);
-                        } else if (isAudio) {
-                            const audioTag = document.createElement('audio');
-                            audioTag.src = href;
-                            audioTag.controls = true;
-                            audioTag.style.width = '100%';
-                            link.parentNode.replaceChild(audioTag, link);
                         }
                     });
 
-                    // 格式化时间为：年/月/日 时:分
                     const date = new Date(issue.created_at);
                     const dateString = `${date.toLocaleDateString()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 
@@ -135,7 +179,7 @@
                     container.appendChild(postElement);
                 });
             } catch (error) {
-                document.getElementById('posts-container').innerHTML = '<div class="post">❌ 获取内容失败，请检查设置。</div>';
+                document.getElementById('posts-container').innerHTML = '<div class="post">❌ 加载内容失败。</div>';
             }
         }
         fetchPosts();
