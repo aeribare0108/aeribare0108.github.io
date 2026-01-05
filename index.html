@@ -6,75 +6,98 @@
     <title>我的极简博客</title>
     
     <link rel="icon" type="image/png" href="zijunlogo.png">
-    
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <style>
-        /* 1. 视频背景核心样式 */
+        /* 1. 全屏视频背景：完美居中且不拉伸 */
         #video-background {
             position: fixed;
-            right: 0;
-            bottom: 0;
+            top: 50%;
+            left: 50%;
             min-width: 100%;
             min-height: 100%;
             width: auto;
             height: auto;
-            z-index: -100; /* 放在最底层 */
-            object-fit: cover; /* 确保视频覆盖全屏且不拉伸 */
-            filter: brightness(0.8); /* 稍微调暗视频，突出文字 */
+            z-index: -100;
+            transform: translate(-50%, -50%); /* 绝对居中核心代码 */
+            object-fit: cover; /* 自动裁剪，类似壁纸 */
+            filter: brightness(0.7) contrast(1.1); /* 稍微调暗，增加对比度 */
         }
 
+        /* 基础页面设置 */
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
-            max-width: 800px; 
-            margin: 0 auto; 
-            padding: 20px; 
-            line-height: 1.6; 
-            color: #333;
-            /* 背景设为透明，否则会遮住视频 */
-            background-color: transparent; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0;
+            padding: 0;
+            color: #222;
+            background-color: #000; /* 视频加载前的底色 */
         }
 
-        /* 2. 让内容容器半透明，增加质感 */
+        /* 滚动容器 */
+        .main-container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        /* 2. 顶栏：毛玻璃效果 */
         .header {
             display: flex;
             align-items: center;
-            background: rgba(255, 255, 255, 0.9); /* 90% 透明度的白色 */
-            padding: 20px;
-            border-radius: 12px;
-            backdrop-filter: blur(5px); /* 背景模糊，果冻效果 */
-            margin-bottom: 40px;
-            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.75); 
+            padding: 15px 20px;
+            border-radius: 16px;
+            backdrop-filter: blur(12px); /* 强力模糊效果 */
+            -webkit-backdrop-filter: blur(12px);
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .logo {
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             object-fit: contain;
-            margin-right: 15px;
+            margin-right: 12px;
         }
 
-        h1 { margin: 0; font-size: 1.4rem; color: #222; }
+        h1 { margin: 0; font-size: 1.2rem; letter-spacing: 1px; }
 
+        /* 3. 文章卡片 */
         .post { 
-            background: rgba(255, 255, 255, 0.9); /* 内容区半透明 */
-            padding: 30px;
-            border-radius: 12px;
-            margin-bottom: 30px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            backdrop-filter: blur(5px);
+            background: rgba(255, 255, 255, 0.85); 
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 25px; 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            transition: transform 0.3s ease;
         }
 
-        .post h2 { margin-top: 0; color: #0366d6; }
-        .post small { color: #888; display: block; margin-bottom: 15px; }
+        /* 电脑端悬停微动效果 */
+        @media (min-width: 768px) {
+            .post:hover { transform: translateY(-5px); }
+        }
 
-        /* 防止文章内图片拉伸 */
+        .post h2 { margin-top: 0; color: #0056b3; font-size: 1.5rem; }
+        .post small { color: #666; display: block; margin-bottom: 15px; font-weight: 500; }
+
+        /* 文章内图片修复 */
         .content img { 
             max-width: 100%;    
             height: auto !important; 
             display: block;     
-            margin: 20px 0;     
-            border-radius: 8px; 
+            margin: 15px 0;     
+            border-radius: 12px; 
+        }
+
+        /* 手机端适配优化 */
+        @media (max-width: 480px) {
+            .main-container { padding: 20px 15px; }
+            .post { padding: 20px; border-radius: 15px; }
+            h1 { font-size: 1rem; }
         }
     </style>
 </head>
@@ -82,15 +105,18 @@
 
     <video autoplay muted loop playsinline id="video-background">
         <source src="background.mp4" type="video/mp4">
-        您的浏览器不支持视频背景。
     </video>
 
-    <header class="header">
-        <img src="zijunlogo.png" alt="Logo" class="logo">
-        <h1>我的博客预览</h1>
-    </header>
+    <div class="main-container">
+        <header class="header">
+            <img src="zijunlogo.png" alt="Logo" class="logo">
+            <h1>我的博客预览</h1>
+        </header>
 
-    <div id="posts-container">正在加载内容...</div>
+        <div id="posts-container">
+            <div class="post">🚀 正在获取最新帖子...</div>
+        </div>
+    </div>
 
     <script>
         const GITHUB_USERNAME = 'aeribare0108';
@@ -105,7 +131,7 @@
                 const container = document.getElementById('posts-container');
                 
                 if (issues.length === 0) {
-                    container.innerHTML = '<div class="post">还没有发布文章。</div>';
+                    container.innerHTML = '<div class="post">📭 还没有发布任何内容。</div>';
                     return;
                 }
 
@@ -117,13 +143,13 @@
                     
                     postElement.innerHTML = `
                         <h2>${issue.title}</h2>
-                        <small>📅 发布日期: ${new Date(issue.created_at).toLocaleDateString()}</small>
+                        <small>📅 ${new Date(issue.created_at).toLocaleDateString()}</small>
                         <div class="content">${htmlContent}</div>
                     `;
                     container.appendChild(postElement);
                 });
             } catch (error) {
-                document.getElementById('posts-container').innerHTML = '<div class="post">加载内容出错。</div>';
+                document.getElementById('posts-container').innerHTML = '<div class="post">⚠️ 加载失败，请检查网络。</div>';
             }
         }
         fetchPosts();
