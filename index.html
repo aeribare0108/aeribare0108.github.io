@@ -10,7 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     
     <style>
-        /* 1. 视频背景 */
+        /* 1. 背景与基础 */
         #video-background {
             position: fixed; top: 50%; left: 50%;
             min-width: 100%; min-height: 100%;
@@ -18,8 +18,7 @@
             transform: translate(-50%, -50%);
             object-fit: cover; filter: brightness(0.6) contrast(1.1);
         }
-
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; color: #222; background-color: #000; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; color: #222; background-color: #000; line-height: 1.6; }
         .main-container { max-width: 750px; margin: 0 auto; padding: 40px 20px; }
 
         /* 2. 顶栏 */
@@ -43,31 +42,43 @@
         .post h2 { margin-top: 0; color: #0056b3; margin-bottom: 8px; }
         .post small { color: #666; display: block; margin-bottom: 20px; font-family: monospace; }
 
-        /* 4. 按钮组 */
+        /* 4. 按钮组样式 */
         .action-bar { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
         .comment-toggle, .like-btn {
             border: none; padding: 10px 18px; border-radius: 12px; cursor: pointer; 
             font-size: 14px; font-weight: bold; transition: 0.3s; display: flex; align-items: center; gap: 6px;
+            white-space: nowrap;
         }
         .comment-toggle { background: #0056b3; color: white; }
-        .comment-toggle:hover { background: #004494; }
+        .comment-toggle:hover { background: #004494; transform: translateY(-2px); }
         
         .like-btn { background: rgba(255, 71, 87, 0.1); color: #ff4757; border: 1px solid #ff4757; }
-        .like-btn:hover { background: #ff4757; color: white; }
-        .like-btn.active { background: #ff4757; color: white; }
+        .like-btn:hover { background: #ff4757; color: white; transform: translateY(-2px); }
+        .like-btn.active { background: #ff4757 !important; color: white !important; }
 
-        /* 5. 侧边栏与弹窗 */
+        /* 5. 右侧悬浮面板 */
         .side-panel { position: fixed; right: 30px; top: 120px; display: flex; flex-direction: column; gap: 12px; z-index: 100; }
-        .side-btn { background: rgba(255, 255, 255, 0.9); padding: 12px 20px; border-radius: 50px; text-decoration: none; color: #333; font-weight: bold; font-size: 14px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5); text-align: center; }
-        .btn-pay { background: #ff4757; color: white; }
-        #pay-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 200; }
-        .pay-card { background: white; padding: 15px; border-radius: 24px; position: relative; max-width: 90%; }
-        .pay-card img { max-width: 320px; width: 100%; border-radius: 15px; }
-        .close-btn { position: absolute; top: -12px; right: -12px; background: #ff4757; color: white; width: 32px; height: 32px; border-radius: 50%; border: 2px solid white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .side-btn { 
+            background: rgba(255, 255, 255, 0.9); padding: 12px 20px; border-radius: 50px; 
+            text-decoration: none; color: #333; font-weight: bold; font-size: 14px; 
+            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5); 
+            text-align: center; transition: 0.3s; cursor: pointer; white-space: nowrap;
+        }
+        .side-btn:hover { transform: scale(1.05); background: white; }
+        .btn-pay { background: #ff4757; color: white; border: none; }
 
+        /* 6. 支付弹窗 */
+        #pay-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 200; }
+        .pay-card { background: white; padding: 15px; border-radius: 24px; position: relative; max-width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .pay-card img { max-width: 320px; width: 100%; display: block; border-radius: 15px; }
+        .close-btn { position: absolute; top: -12px; right: -12px; background: #ff4757; color: white; width: 32px; height: 32px; border-radius: 50%; border: 2px solid white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+
+        /* 7. 手机端适配 */
         @media (max-width: 600px) {
             .side-panel { position: static; flex-direction: row; justify-content: center; margin-bottom: 25px; gap: 8px; padding: 0 10px; }
-            .side-btn { padding: 10px 14px; font-size: 11px; flex: 1; }
+            .side-btn { padding: 10px 14px; font-size: 11px; flex: 1; max-width: 110px; }
+            .post { padding: 20px; }
+            h1 { font-size: 1.1rem; }
         }
         .content img, .content video { max-width: 100% !important; height: auto !important; display: block; margin: 20px 0; border-radius: 12px; }
     </style>
@@ -98,64 +109,78 @@
         </div>
 
         <div id="posts-container">
-            <div class="post">🚀 喵喵正在同步云端数据...</div>
+            <div class="post">🚀 正在同步云端数据...</div>
         </div>
     </div>
 
     <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
 
     <script>
-        // 1. 初始化 LeanCloud
+        // 1. 初始化 LeanCloud 国际版
         AV.init({
             appId: "KEVV8UiFOCg8pehjuwp0Qs4X-MdYXbMMI",
             appKey: "jv3DhOJKIURFTTDTNAieGrDS",
-            serverURL: "https://kevv8uif.lc-cn-n1.lcfile.com" // 自动匹配国内节点
+            serverURL: "https://kevv8uif.api.lncldglobal.com"
         });
 
         function togglePay(show) { document.getElementById('pay-overlay').style.display = show ? 'flex' : 'none'; }
 
         // 2. 云端获取点赞数
         async function getLikeCount(issueId, span) {
-            const query = new AV.Query('Counter');
-            query.equalTo('issueId', String(issueId));
-            const result = await query.first();
-            span.innerText = result ? (result.get('likes') || 0) : 0;
+            try {
+                const query = new AV.Query('Counter');
+                query.equalTo('issueId', String(issueId));
+                const result = await query.first();
+                span.innerText = result ? (result.get('likes') || 0) : 0;
+            } catch (e) { span.innerText = 0; }
         }
 
         // 3. 处理点击点赞
         async function handleLike(btn, issueId) {
             const likedPosts = JSON.parse(localStorage.getItem('liked_posts') || '{}');
-            if (likedPosts[issueId]) return alert('你已经点过赞啦！');
-
-            const query = new AV.Query('Counter');
-            query.equalTo('issueId', String(issueId));
-            let counter = await query.first();
-
-            if (!counter) {
-                const Counter = AV.Object.extend('Counter');
-                counter = new Counter();
-                counter.set('issueId', String(issueId));
-                counter.set('likes', 1);
-            } else {
-                counter.increment('likes', 1);
-            }
+            if (likedPosts[issueId]) return alert('你已经点过赞啦！喵~');
 
             try {
+                const query = new AV.Query('Counter');
+                query.equalTo('issueId', String(issueId));
+                let counter = await query.first();
+
+                if (!counter) {
+                    const Counter = AV.Object.extend('Counter');
+                    counter = new Counter();
+                    counter.set('issueId', String(issueId));
+                    counter.set('likes', 1);
+                    // 设置 ACL 权限
+                    const acl = new AV.ACL();
+                    acl.setPublicReadAccess(true);
+                    acl.setPublicWriteAccess(true);
+                    counter.setACL(acl);
+                } else {
+                    counter.increment('likes', 1);
+                }
+
                 await counter.save();
                 likedPosts[issueId] = true;
                 localStorage.setItem('liked_posts', JSON.stringify(likedPosts));
+                
                 btn.classList.add('active');
                 const span = btn.querySelector('.count');
-                span.innerText = parseInt(span.innerText) + 1;
+                span.innerText = parseInt(span.innerText || 0) + 1;
                 btn.firstChild.textContent = '❤️ 已点赞 ';
-            } catch (err) { alert('点赞失败，请稍后再试'); }
+            } catch (err) { 
+                console.error(err);
+                alert('点赞失败: ' + err.message); 
+            }
         }
 
+        // 4. 评论区展开
         function toggleComments(id) {
             const el = document.getElementById(`comment-box-${id}`);
             const isHidden = el.style.display === 'none';
             el.style.display = isHidden ? 'block' : 'none';
-            if (isHidden && window.renderCusdis) window.renderCusdis(el.querySelector('#cusdis_thread'));
+            if (isHidden && window.renderCusdis) {
+                window.renderCusdis(el.querySelector('#cusdis_thread'));
+            }
         }
 
         const GITHUB_USERNAME = 'aeribare0108';
@@ -184,6 +209,7 @@
                         if (href.match(/\.(mp4|webm|mov|m4v)/i) || href.includes('user-attachments')) {
                             const video = document.createElement('video');
                             video.src = href; video.controls = true; video.style.width = '100%';
+                            video.setAttribute('playsinline', '');
                             link.parentNode.replaceChild(video, link);
                         }
                     });
@@ -209,7 +235,7 @@
                     container.appendChild(postElement);
                     getLikeCount(issue.id, document.getElementById(`count-${issue.id}`));
                 });
-            } catch (error) { container.innerHTML = '<div class="post">❌ 加载失败。</div>'; }
+            } catch (error) { container.innerHTML = '<div class="post">❌ 文章加载失败，请刷新。</div>'; }
         }
         fetchPosts();
     </script>
