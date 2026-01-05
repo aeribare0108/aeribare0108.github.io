@@ -9,31 +9,23 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <style>
+        /* 视频背景居中 */
         #video-background {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            min-width: 100%;
-            min-height: 100%;
-            width: auto;
-            height: auto;
-            z-index: -100;
+            position: fixed; top: 50%; left: 50%;
+            min-width: 100%; min-height: 100%;
+            width: auto; height: auto; z-index: -100;
             transform: translate(-50%, -50%);
-            object-fit: cover;
-            filter: brightness(0.6) contrast(1.1);
+            object-fit: cover; filter: brightness(0.6) contrast(1.1);
         }
 
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             margin: 0; padding: 0; color: #222; background-color: #000;
         }
 
-        .main-container {
-            max-width: 750px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
+        .main-container { max-width: 750px; margin: 0 auto; padding: 40px 20px; }
 
+        /* 顶栏 UI */
         .header {
             display: flex; align-items: center;
             background: rgba(255, 255, 255, 0.85); 
@@ -45,6 +37,7 @@
         .logo { width: 48px; height: 48px; object-fit: contain; margin-right: 15px; }
         h1 { margin: 0; font-size: 1.3rem; color: #1a1a1a; }
 
+        /* 文章卡片 */
         .post { 
             background: rgba(255, 255, 255, 0.92); 
             padding: 30px; border-radius: 24px;
@@ -52,12 +45,12 @@
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
         }
 
-        .post h2 { margin-top: 0; color: #0056b3; }
-        .post small { color: #777; display: block; margin-bottom: 20px; }
+        .post h2 { margin-top: 0; color: #0056b3; margin-bottom: 8px; }
+        .post small { color: #666; display: block; margin-bottom: 20px; font-family: monospace; }
 
+        /* 媒体适配 */
         .content img, .content video { 
-            max-width: 100% !important;    
-            height: auto !important; 
+            max-width: 100% !important; height: auto !important; 
             display: block; margin: 20px 0; border-radius: 12px; 
         }
         .content audio { width: 100%; margin: 15px 0; }
@@ -76,7 +69,7 @@
         </header>
 
         <div id="posts-container">
-            <div class="post">✨ 正在连接 GitHub 内容...</div>
+            <div class="post">🚀 喵喵正在抓取内容...</div>
         </div>
     </div>
 
@@ -93,7 +86,7 @@
                 const container = document.getElementById('posts-container');
                 
                 if (issues.length === 0) {
-                    container.innerHTML = '<div class="post">📭 暂无文章。</div>';
+                    container.innerHTML = '<div class="post">📭 喵苗田口草博客暂时还没有文章。</div>';
                     return;
                 }
 
@@ -110,15 +103,18 @@
                     const links = tempDiv.querySelectorAll('a');
                     links.forEach(link => {
                         const href = link.getAttribute('href');
-                        if (href.match(/\.(mp4|webm|mov|m4v)/i) || href.includes('video')) {
+                        // 增强型检测：如果是 github 附件或者包含视频后缀
+                        const isVideo = href.match(/\.(mp4|webm|mov|m4v)/i) || href.includes('user-attachments') || href.includes('assets');
+                        const isAudio = href.match(/\.(mp3|wav|ogg|m4a)/i);
+
+                        if (isVideo) {
                             const videoTag = document.createElement('video');
                             videoTag.src = href;
                             videoTag.controls = true;
                             videoTag.setAttribute('playsinline', '');
                             videoTag.style.width = '100%';
                             link.parentNode.replaceChild(videoTag, link);
-                        } 
-                        else if (href.match(/\.(mp3|wav|ogg|m4a)/i)) {
+                        } else if (isAudio) {
                             const audioTag = document.createElement('audio');
                             audioTag.src = href;
                             audioTag.controls = true;
@@ -127,15 +123,19 @@
                         }
                     });
 
+                    // 格式化时间为：年/月/日 时:分
+                    const date = new Date(issue.created_at);
+                    const dateString = `${date.toLocaleDateString()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+
                     postElement.innerHTML = `
                         <h2>${issue.title}</h2>
-                        <small>📅 ${new Date(issue.created_at).toLocaleDateString()}</small>
+                        <small>📅 发布于: ${dateString}</small>
                         <div class="content">${tempDiv.innerHTML}</div>
                     `;
                     container.appendChild(postElement);
                 });
             } catch (error) {
-                document.getElementById('posts-container').innerHTML = '<div class="post">❌ 加载失败。</div>';
+                document.getElementById('posts-container').innerHTML = '<div class="post">❌ 获取内容失败，请检查设置。</div>';
             }
         }
         fetchPosts();
