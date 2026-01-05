@@ -10,7 +10,20 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <style>
-        /* 基础页面排版 */
+        /* 1. 视频背景核心样式 */
+        #video-background {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -100; /* 放在最底层 */
+            object-fit: cover; /* 确保视频覆盖全屏且不拉伸 */
+            filter: brightness(0.8); /* 稍微调暗视频，突出文字 */
+        }
+
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
             max-width: 800px; 
@@ -18,87 +31,81 @@
             padding: 20px; 
             line-height: 1.6; 
             color: #333;
-            background-color: #f9f9f9; /* 稍微淡灰色的背景 */
+            /* 背景设为透明，否则会遮住视频 */
+            background-color: transparent; 
         }
 
-        /* 2. 顶栏 Logo 和标题布局 */
+        /* 2. 让内容容器半透明，增加质感 */
         .header {
             display: flex;
             align-items: center;
-            background: white;
+            background: rgba(255, 255, 255, 0.9); /* 90% 透明度的白色 */
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            backdrop-filter: blur(5px); /* 背景模糊，果冻效果 */
             margin-bottom: 40px;
             margin-top: 10px;
         }
 
         .logo {
-            width: 50px;         /* 适合的大小 */
+            width: 50px;
             height: 50px;
-            object-fit: contain; /* 核心：防止图片拉伸 */
+            object-fit: contain;
             margin-right: 15px;
         }
 
-        h1 { 
-            margin: 0; 
-            font-size: 1.4rem; 
-            color: #222;
-        }
+        h1 { margin: 0; font-size: 1.4rem; color: #222; }
 
-        /* 文章容器 */
         .post { 
-            background: white;
+            background: rgba(255, 255, 255, 0.9); /* 内容区半透明 */
             padding: 30px;
             border-radius: 12px;
             margin-bottom: 30px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            backdrop-filter: blur(5px);
         }
 
         .post h2 { margin-top: 0; color: #0366d6; }
         .post small { color: #888; display: block; margin-bottom: 15px; }
 
-        /* 3. 核心：修复 Issue 内上传图片的拉伸问题 */
+        /* 防止文章内图片拉伸 */
         .content img { 
-            max-width: 100%;    /* 宽度不超过容器 */
-            height: auto !important; /* 高度强制按比例，防止拉伸 */
+            max-width: 100%;    
+            height: auto !important; 
             display: block;     
             margin: 20px 0;     
             border-radius: 8px; 
         }
-
-        /* 链接样式 */
-        .content a { color: #0366d6; text-decoration: none; }
-        .content a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
+
+    <video autoplay muted loop playsinline id="video-background">
+        <source src="background.mp4" type="video/mp4">
+        您的浏览器不支持视频背景。
+    </video>
 
     <header class="header">
         <img src="zijunlogo.png" alt="Logo" class="logo">
         <h1>我的博客预览</h1>
     </header>
 
-    <div id="posts-container">正在努力加载内容...</div>
+    <div id="posts-container">正在加载内容...</div>
 
     <script>
-        // 配置你的 GitHub 信息
         const GITHUB_USERNAME = 'aeribare0108';
         const REPO_NAME = 'aeribare0108.github.io';
 
         async function fetchPosts() {
-            // 获取带 post 标签的 Issue
             const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/issues?labels=post&state=open`;
             
             try {
                 const response = await fetch(url);
-                if (!response.ok) throw new Error('API 请求失败');
-                
                 const issues = await response.json();
                 const container = document.getElementById('posts-container');
                 
                 if (issues.length === 0) {
-                    container.innerHTML = '<div class="post">还没有发布带 "post" 标签的文章。</div>';
+                    container.innerHTML = '<div class="post">还没有发布文章。</div>';
                     return;
                 }
 
@@ -106,9 +113,7 @@
                 issues.forEach(issue => {
                     const postElement = document.createElement('div');
                     postElement.className = 'post';
-                    
-                    // 将 Markdown 转换为 HTML
-                    const htmlContent = marked.parse(issue.body || "此文章没有内容");
+                    const htmlContent = marked.parse(issue.body || "");
                     
                     postElement.innerHTML = `
                         <h2>${issue.title}</h2>
@@ -118,11 +123,9 @@
                     container.appendChild(postElement);
                 });
             } catch (error) {
-                console.error(error);
-                document.getElementById('posts-container').innerHTML = '<div class="post">加载内容出错，请稍后再试。</div>';
+                document.getElementById('posts-container').innerHTML = '<div class="post">加载内容出错。</div>';
             }
         }
-
         fetchPosts();
     </script>
 </body>
