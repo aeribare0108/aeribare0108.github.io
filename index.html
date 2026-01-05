@@ -7,6 +7,7 @@
     
     <link rel="icon" type="image/png" href="bblogo.png">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     
     <style>
         /* 1. 视频背景 */
@@ -21,7 +22,7 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; color: #222; background-color: #000; }
         .main-container { max-width: 750px; margin: 0 auto; padding: 40px 20px; }
 
-        /* 2. 顶栏 UI */
+        /* 2. 顶栏 */
         .header {
             display: flex; align-items: center;
             background: rgba(255, 255, 255, 0.85); 
@@ -37,44 +38,37 @@
             background: rgba(255, 255, 255, 0.92); 
             padding: 30px; border-radius: 24px;
             margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5);
         }
         .post h2 { margin-top: 0; color: #0056b3; margin-bottom: 8px; }
         .post small { color: #666; display: block; margin-bottom: 20px; font-family: monospace; }
 
-        /* 4. 按钮样式 */
-        .side-panel { position: fixed; right: 30px; top: 120px; display: flex; flex-direction: column; gap: 12px; z-index: 100; }
-        .side-btn {
-            background: rgba(255, 255, 255, 0.9); padding: 12px 20px; border-radius: 50px;
-            text-decoration: none; color: #333; font-weight: bold; font-size: 14px;
-            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5);
-            transition: 0.3s; text-align: center; cursor: pointer; white-space: nowrap;
+        /* 4. 按钮组 */
+        .action-bar { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+        .comment-toggle, .like-btn {
+            border: none; padding: 10px 18px; border-radius: 12px; cursor: pointer; 
+            font-size: 14px; font-weight: bold; transition: 0.3s; display: flex; align-items: center; gap: 6px;
         }
-        .btn-pay { background: #ff4757; color: white; border: none; }
+        .comment-toggle { background: #0056b3; color: white; }
+        .comment-toggle:hover { background: #004494; }
         
-        .comment-toggle {
-            background: #0056b3; color: white; border: none; padding: 10px 20px;
-            border-radius: 12px; cursor: pointer; font-size: 14px; margin-top: 15px;
-            transition: 0.3s; font-weight: bold;
-        }
-        .comment-toggle:hover { background: #004494; transform: scale(1.02); }
+        .like-btn { background: rgba(255, 71, 87, 0.1); color: #ff4757; border: 1px solid #ff4757; }
+        .like-btn:hover { background: #ff4757; color: white; }
+        .like-btn.active { background: #ff4757; color: white; }
 
-        /* 5. 弹窗 */
-        #pay-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
-            display: none; justify-content: center; align-items: center; z-index: 200;
-        }
+        /* 5. 侧边栏与弹窗 */
+        .side-panel { position: fixed; right: 30px; top: 120px; display: flex; flex-direction: column; gap: 12px; z-index: 100; }
+        .side-btn { background: rgba(255, 255, 255, 0.9); padding: 12px 20px; border-radius: 50px; text-decoration: none; color: #333; font-weight: bold; font-size: 14px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5); text-align: center; }
+        .btn-pay { background: #ff4757; color: white; }
+        #pay-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 200; }
         .pay-card { background: white; padding: 15px; border-radius: 24px; position: relative; max-width: 90%; }
-        .pay-card img { max-width: 320px; width: 100%; display: block; border-radius: 15px; }
+        .pay-card img { max-width: 320px; width: 100%; border-radius: 15px; }
         .close-btn { position: absolute; top: -12px; right: -12px; background: #ff4757; color: white; width: 32px; height: 32px; border-radius: 50%; border: 2px solid white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         @media (max-width: 600px) {
             .side-panel { position: static; flex-direction: row; justify-content: center; margin-bottom: 25px; gap: 8px; padding: 0 10px; }
-            .side-btn { padding: 10px 14px; font-size: 11px; flex: 1; max-width: 110px; }
+            .side-btn { padding: 10px 14px; font-size: 11px; flex: 1; }
         }
-
         .content img, .content video { max-width: 100% !important; height: auto !important; display: block; margin: 20px 0; border-radius: 12px; }
     </style>
 </head>
@@ -104,30 +98,69 @@
         </div>
 
         <div id="posts-container">
-            <div class="post">🚀 喵喵正在努力加载内容...</div>
+            <div class="post">🚀 喵喵正在同步云端数据...</div>
         </div>
     </div>
 
     <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
 
     <script>
+        // 1. 初始化 LeanCloud
+        AV.init({
+            appId: "KEVV8UiFOCg8pehjuwp0Qs4X-MdYXbMMI",
+            appKey: "jv3DhOJKIURFTTDTNAieGrDS",
+            serverURL: "https://kevv8uif.lc-cn-n1.lcfile.com" // 自动匹配国内节点
+        });
+
         function togglePay(show) { document.getElementById('pay-overlay').style.display = show ? 'flex' : 'none'; }
 
-        // 留言区展开/收起，并强制重绘 Cusdis 界面
+        // 2. 云端获取点赞数
+        async function getLikeCount(issueId, span) {
+            const query = new AV.Query('Counter');
+            query.equalTo('issueId', String(issueId));
+            const result = await query.first();
+            span.innerText = result ? (result.get('likes') || 0) : 0;
+        }
+
+        // 3. 处理点击点赞
+        async function handleLike(btn, issueId) {
+            const likedPosts = JSON.parse(localStorage.getItem('liked_posts') || '{}');
+            if (likedPosts[issueId]) return alert('你已经点过赞啦！');
+
+            const query = new AV.Query('Counter');
+            query.equalTo('issueId', String(issueId));
+            let counter = await query.first();
+
+            if (!counter) {
+                const Counter = AV.Object.extend('Counter');
+                counter = new Counter();
+                counter.set('issueId', String(issueId));
+                counter.set('likes', 1);
+            } else {
+                counter.increment('likes', 1);
+            }
+
+            try {
+                await counter.save();
+                likedPosts[issueId] = true;
+                localStorage.setItem('liked_posts', JSON.stringify(likedPosts));
+                btn.classList.add('active');
+                const span = btn.querySelector('.count');
+                span.innerText = parseInt(span.innerText) + 1;
+                btn.firstChild.textContent = '❤️ 已点赞 ';
+            } catch (err) { alert('点赞失败，请稍后再试'); }
+        }
+
         function toggleComments(id) {
             const el = document.getElementById(`comment-box-${id}`);
             const isHidden = el.style.display === 'none';
             el.style.display = isHidden ? 'block' : 'none';
-            
-            // 如果是展开，尝试通知 Cusdis 渲染
-            if (isHidden && window.renderCusdis) {
-                window.renderCusdis(el.querySelector('#cusdis_thread'));
-            }
+            if (isHidden && window.renderCusdis) window.renderCusdis(el.querySelector('#cusdis_thread'));
         }
 
         const GITHUB_USERNAME = 'aeribare0108';
         const REPO_NAME = 'aeribare0108.github.io';
-        const CUSDIS_APP_ID = 'ba5226e8-dac4-45ae-9acb-27723c830cc0'; // 已经帮你填好 ID
+        const CUSDIS_APP_ID = 'ba5226e8-dac4-45ae-9acb-27723c830cc0';
 
         async function fetchPosts() {
             const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/issues?labels=post&state=open`;
@@ -135,58 +168,48 @@
                 const response = await fetch(url);
                 const issues = await response.json();
                 const container = document.getElementById('posts-container');
-                
-                if (issues.length === 0) {
-                    container.innerHTML = '<div class="post">📭 暂无文章。</div>';
-                    return;
-                }
+                if (issues.length === 0) { container.innerHTML = '<div class="post">📭 暂无文章。</div>'; return; }
 
                 container.innerHTML = ''; 
                 issues.forEach(issue => {
                     const postElement = document.createElement('div');
                     postElement.className = 'post';
-                    
                     let htmlContent = marked.parse(issue.body || "");
                     const tempDiv = document.createElement('div');
                     tempDiv.innerHTML = htmlContent;
-                    
-                    // 媒体转换
-                    const links = tempDiv.querySelectorAll('a');
-                    links.forEach(link => {
+
+                    // 视频处理
+                    tempDiv.querySelectorAll('a').forEach(link => {
                         const href = link.getAttribute('href');
                         if (href.match(/\.(mp4|webm|mov|m4v)/i) || href.includes('user-attachments')) {
-                            const videoTag = document.createElement('video');
-                            videoTag.src = href; videoTag.controls = true;
-                            videoTag.setAttribute('playsinline', ''); videoTag.style.width = '100%';
-                            link.parentNode.replaceChild(videoTag, link);
+                            const video = document.createElement('video');
+                            video.src = href; video.controls = true; video.style.width = '100%';
+                            link.parentNode.replaceChild(video, link);
                         }
                     });
 
                     const date = new Date(issue.created_at);
                     const dateString = `${date.toLocaleDateString()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                    const isLiked = JSON.parse(localStorage.getItem('liked_posts') || '{}')[issue.id];
 
                     postElement.innerHTML = `
                         <h2>${issue.title}</h2>
                         <small>📅 发布于: ${dateString}</small>
                         <div class="content">${tempDiv.innerHTML}</div>
-                        
-                        <button class="comment-toggle" onclick="toggleComments('${issue.id}')">💬 留言互动</button>
-                        
+                        <div class="action-bar">
+                            <button class="like-btn ${isLiked?'active':''}" onclick="handleLike(this, '${issue.id}')">
+                                ${isLiked?'❤️ 已点赞':'🤍 点赞'} <span class="count" id="count-${issue.id}">0</span>
+                            </button>
+                            <button class="comment-toggle" onclick="toggleComments('${issue.id}')">💬 留言互动</button>
+                        </div>
                         <div id="comment-box-${issue.id}" style="display:none; margin-top:25px; border-top:1px solid #eee; padding-top:20px;">
-                            <div id="cusdis_thread"
-                                data-host="https://cusdis.com"
-                                data-app-id="${CUSDIS_APP_ID}"
-                                data-page-id="${issue.id}"
-                                data-page-url="${window.location.origin}${window.location.pathname}#${issue.id}"
-                                data-page-title="${issue.title}">
-                            </div>
+                            <div id="cusdis_thread" data-host="https://cusdis.com" data-app-id="${CUSDIS_APP_ID}" data-page-id="${issue.id}" data-page-url="${window.location.href}#${issue.id}" data-page-title="${issue.title}"></div>
                         </div>
                     `;
                     container.appendChild(postElement);
+                    getLikeCount(issue.id, document.getElementById(`count-${issue.id}`));
                 });
-            } catch (error) {
-                document.getElementById('posts-container').innerHTML = '<div class="post">❌ 加载内容失败。</div>';
-            }
+            } catch (error) { container.innerHTML = '<div class="post">❌ 加载失败。</div>'; }
         }
         fetchPosts();
     </script>
