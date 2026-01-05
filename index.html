@@ -5,102 +5,121 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的极简博客</title>
     
+    <link rel="icon" type="image/png" href="zijunlogo.png">
+    
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <style>
-        /* 页面整体样式 */
+        /* 基础页面排版 */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
             max-width: 800px; 
             margin: 0 auto; 
-            padding: 40px 20px; 
+            padding: 20px; 
             line-height: 1.6; 
             color: #333;
-            background-color: #fff;
+            background-color: #f9f9f9; /* 稍微淡灰色的背景 */
         }
 
-        h1 { border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        /* 2. 顶栏 Logo 和标题布局 */
+        .header {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 40px;
+            margin-top: 10px;
+        }
 
-        /* 文章容器样式 */
+        .logo {
+            width: 50px;         /* 适合的大小 */
+            height: 50px;
+            object-fit: contain; /* 核心：防止图片拉伸 */
+            margin-right: 15px;
+        }
+
+        h1 { 
+            margin: 0; 
+            font-size: 1.4rem; 
+            color: #222;
+        }
+
+        /* 文章容器 */
         .post { 
-            border-bottom: 1px solid #eee; 
-            margin-bottom: 40px; 
-            padding-bottom: 30px; 
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
-        .post h2 { margin-bottom: 5px; color: #0366d6; }
-        .post small { color: #666; display: block; margin-bottom: 15px; }
+        .post h2 { margin-top: 0; color: #0366d6; }
+        .post small { color: #888; display: block; margin-bottom: 15px; }
 
-        /* 重要：防止图片拉伸的核心 CSS */
+        /* 3. 核心：修复 Issue 内上传图片的拉伸问题 */
         .content img { 
             max-width: 100%;    /* 宽度不超过容器 */
-            height: auto;       /* 高度根据比例自动调整，防止拉伸 */
-            display: block;     /* 独立成行 */
-            margin: 20px 0;     /* 上下留间距 */
-            border-radius: 8px; /* 圆角修饰 */
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* 增加一点阴影让图片更好看 */
+            height: auto !important; /* 高度强制按比例，防止拉伸 */
+            display: block;     
+            margin: 20px 0;     
+            border-radius: 8px; 
         }
 
-        /* 标签样式 */
-        .tag { 
-            background: #e1f5fe; 
-            color: #01579b; 
-            padding: 2px 8px; 
-            border-radius: 4px; 
-            font-size: 12px; 
-            margin-left: 10px;
-        }
-
-        /* 响应式调整：手机端图片不加阴影或减小边距 */
-        @media (max-width: 600px) {
-            body { padding: 20px; }
-        }
+        /* 链接样式 */
+        .content a { color: #0366d6; text-decoration: none; }
+        .content a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
-    <h1>我的博客预览</h1>
-    <div id="posts-container">正在加载内容...</div>
+
+    <header class="header">
+        <img src="zijunlogo.png" alt="Logo" class="logo">
+        <h1>我的博客预览</h1>
+    </header>
+
+    <div id="posts-container">正在努力加载内容...</div>
 
     <script>
-        // 1. 配置信息
+        // 配置你的 GitHub 信息
         const GITHUB_USERNAME = 'aeribare0108';
         const REPO_NAME = 'aeribare0108.github.io';
 
         async function fetchPosts() {
-            // 只抓取带 'post' 标签且状态为 'open' 的 Issue
+            // 获取带 post 标签的 Issue
             const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/issues?labels=post&state=open`;
             
             try {
                 const response = await fetch(url);
-                if (!response.ok) throw new Error('网络请求失败');
+                if (!response.ok) throw new Error('API 请求失败');
                 
                 const issues = await response.json();
                 const container = document.getElementById('posts-container');
                 
                 if (issues.length === 0) {
-                    container.innerHTML = '<p>还没有发布任何带 "post" 标签的文章哦。</p>';
+                    container.innerHTML = '<div class="post">还没有发布带 "post" 标签的文章。</div>';
                     return;
                 }
 
-                container.innerHTML = ''; // 清空加载提示
-
+                container.innerHTML = ''; 
                 issues.forEach(issue => {
                     const postElement = document.createElement('div');
                     postElement.className = 'post';
                     
-                    // 使用 marked 解析 Markdown 内容 (GitHub Issue 的正文)
-                    const htmlContent = marked.parse(issue.body || "暂无正文内容");
+                    // 将 Markdown 转换为 HTML
+                    const htmlContent = marked.parse(issue.body || "此文章没有内容");
                     
                     postElement.innerHTML = `
                         <h2>${issue.title}</h2>
-                        <small>发布于: ${new Date(issue.created_at).toLocaleDateString()}</small>
+                        <small>📅 发布日期: ${new Date(issue.created_at).toLocaleDateString()}</small>
                         <div class="content">${htmlContent}</div>
                     `;
                     container.appendChild(postElement);
                 });
             } catch (error) {
-                console.error('获取内容失败:', error);
-                document.getElementById('posts-container').innerHTML = '内容加载失败，请检查仓库配置或网络。';
+                console.error(error);
+                document.getElementById('posts-container').innerHTML = '<div class="post">加载内容出错，请稍后再试。</div>';
             }
         }
 
