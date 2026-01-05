@@ -10,50 +10,88 @@
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     
     <style>
-        /* 原有基础样式保持不变 */
-        #video-background { position: fixed; top: 50%; left: 50%; min-width: 100%; min-height: 100%; transform: translate(-50%, -50%); z-index: -100; object-fit: cover; filter: brightness(0.6); }
-        body { font-family: -apple-system, sans-serif; margin: 0; background: #000; color: #222; }
-        .main-container { max-width: 750px; margin: 0 auto; padding: 40px 20px; }
+        /* 1. 全局样式与动态背景 */
+        #video-background {
+            position: fixed; top: 50%; left: 50%;
+            min-width: 100%; min-height: 100%;
+            width: auto; height: auto; z-index: -100;
+            transform: translate(-50%, -50%);
+            object-fit: cover; filter: brightness(0.5) contrast(1.1);
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; color: #222; background-color: #000; overflow-x: hidden; }
+        .main-container { max-width: 750px; margin: 0 auto; padding: 40px 20px; position: relative; z-index: 1; }
 
-        /* 1. 增强版顶栏（带搜索） */
+        /* 2. 增强型顶栏 (带搜索) */
         .header {
             display: flex; align-items: center; justify-content: space-between;
-            background: rgba(255, 255, 255, 0.85); padding: 12px 20px; border-radius: 18px;
-            backdrop-filter: blur(15px); margin-bottom: 35px; border: 1px solid rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.85); 
+            padding: 12px 25px; border-radius: 20px;
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            margin-bottom: 35px; border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
         }
         .header-left { display: flex; align-items: center; }
-        .logo { width: 40px; height: 40px; margin-right: 12px; cursor: pointer; }
-        h1 { margin: 0; font-size: 1.1rem; color: #1a1a1a; white-space: nowrap; }
+        .logo { width: 42px; height: 42px; object-fit: contain; margin-right: 12px; cursor: pointer; transition: 0.3s; }
+        .logo:hover { transform: rotate(15deg); }
+        h1 { margin: 0; font-size: 1.2rem; color: #1a1a1a; letter-spacing: 1px; }
 
-        /* 搜索框 UI */
         .search-wrapper { display: flex; align-items: center; position: relative; }
         .search-input {
             width: 0; opacity: 0; padding: 8px 0; border: none; border-bottom: 2px solid #0056b3;
-            background: transparent; outline: none; transition: all 0.4s ease; font-size: 14px;
+            background: transparent; outline: none; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); font-size: 14px;
         }
-        .search-input.active { width: 150px; opacity: 1; padding: 8px 10px; }
-        .search-icon { cursor: pointer; font-size: 20px; padding: 5px; transition: 0.3s; }
-        .search-icon:hover { transform: scale(1.1); }
+        .search-input.active { width: 180px; opacity: 1; padding: 8px 10px; margin-right: 10px; }
+        .search-icon { cursor: pointer; font-size: 20px; padding: 5px; transition: 0.3s; filter: grayscale(1); }
+        .search-icon:hover { filter: grayscale(0); transform: scale(1.1); }
 
-        /* 2. 文章卡片样式 */
-        .post { background: rgba(255, 255, 255, 0.92); padding: 30px; border-radius: 24px; margin-bottom: 30px; backdrop-filter: blur(10px); transition: 0.3s; }
-        .post.hidden { display: none; } /* 搜索过滤用 */
-        
-        /* 按钮与其他组件保持之前的优化样式 */
-        .action-bar { display: flex; gap: 10px; margin-top: 15px; }
-        .like-btn, .comment-toggle { border: none; padding: 10px 18px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 13px; }
-        .like-btn { background: rgba(255, 71, 87, 0.1); color: #ff4757; }
-        .like-btn.active { background: #ff4757; color: white; }
+        /* 3. 文章卡片与内容比例 */
+        .post { 
+            background: rgba(255, 255, 255, 0.93); 
+            padding: 30px; border-radius: 28px;
+            margin-bottom: 30px; box-shadow: 0 15px 45px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .post.hidden { display: none; opacity: 0; }
+        .post h2 { margin-top: 0; color: #0056b3; font-size: 1.5rem; }
+        .post small { color: #888; display: block; margin-bottom: 20px; font-family: monospace; }
+
+        /* 媒体比例优化 */
+        .content img { max-width: 100% !important; height: auto !important; border-radius: 15px; margin: 15px 0; display: block; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .content video { max-width: 100% !important; border-radius: 15px; margin: 15px 0; background: #000; display: block; }
+        .content audio { width: 100%; margin: 15px 0; }
+
+        /* 4. 互动按钮组 */
+        .action-bar { display: flex; gap: 12px; margin-top: 25px; flex-wrap: wrap; }
+        .btn-interact {
+            border: none; padding: 12px 20px; border-radius: 14px; cursor: pointer; 
+            font-size: 14px; font-weight: bold; transition: 0.3s; display: flex; align-items: center; gap: 8px;
+        }
         .comment-toggle { background: #0056b3; color: white; }
-        .side-panel { position: fixed; right: 30px; top: 120px; display: flex; flex-direction: column; gap: 12px; z-index: 100; }
-        .side-btn { background: white; padding: 12px 20px; border-radius: 50px; text-decoration: none; color: #333; font-weight: bold; font-size: 14px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-        .btn-pay { background: #ff4757; color: white; }
+        .like-btn { background: rgba(255, 71, 87, 0.1); color: #ff4757; border: 1px solid #ff4757; }
+        .like-btn.active { background: #ff4757; color: white; transform: scale(1.05); }
+
+        /* 5. 侧边悬浮与弹窗 */
+        .side-panel { position: fixed; right: 30px; top: 120px; display: flex; flex-direction: column; gap: 15px; z-index: 100; }
+        .side-btn { 
+            background: rgba(255, 255, 255, 0.9); padding: 12px 22px; border-radius: 50px; 
+            text-decoration: none; color: #333; font-weight: bold; font-size: 14px; 
+            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5); text-align: center; transition: 0.3s; 
+        }
+        .side-btn:hover { transform: translateX(-5px); background: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .btn-pay { background: #ff4757; color: white; border: none; }
+
+        #pay-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); display: none; justify-content: center; align-items: center; z-index: 200; }
+        .pay-card { background: white; padding: 20px; border-radius: 30px; position: relative; max-width: 90%; }
+        .pay-card img { max-width: 320px; width: 100%; border-radius: 20px; display: block; }
+        .close-btn { position: absolute; top: -15px; right: -15px; background: #ff4757; color: white; width: 35px; height: 35px; border-radius: 50%; border: 3px solid white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
         @media (max-width: 600px) {
-            .side-panel { position: static; flex-direction: row; margin-bottom: 25px; }
-            .search-input.active { width: 100px; } /* 手机端搜索框稍短 */
+            .side-panel { position: static; flex-direction: row; justify-content: center; margin-bottom: 30px; padding: 0 10px; }
+            .side-btn { flex: 1; padding: 10px; font-size: 12px; }
+            .search-input.active { width: 120px; }
+            .post { padding: 20px; }
         }
-        .content img, .content video { max-width: 100%; border-radius: 12px; margin: 15px 0; }
     </style>
 </head>
 <body>
@@ -69,7 +107,7 @@
                 <h1>喵苗田口草</h1>
             </div>
             <div class="search-wrapper">
-                <input type="text" id="searchInput" class="search-input" placeholder="输入关键词...">
+                <input type="text" id="searchInput" class="search-input" placeholder="搜搜看...">
                 <div class="search-icon" onclick="toggleSearch()">🔍</div>
             </div>
         </header>
@@ -77,59 +115,92 @@
         <div class="side-panel">
             <a href="https://xhslink.com/m/8c7qBm5fcST" target="_blank" class="side-btn">📕 小红书</a>
             <a href="https://www.facebook.com/share/19JhjNVtCH/" target="_blank" class="side-btn">📘 脸书</a>
-            <button onclick="togglePay(true)" class="side-btn btn-pay">☕ 打赏</button>
+            <button onclick="togglePay(true)" class="side-btn btn-pay">☕ 打赏支持</button>
+        </div>
+
+        <div id="pay-overlay" onclick="togglePay(false)">
+            <div class="pay-card" onclick="event.stopPropagation()">
+                <button class="close-btn" onclick="togglePay(false)">×</button>
+                <img src="payment.jpg" alt="Payment QR Code">
+            </div>
         </div>
 
         <div id="posts-container">
-            <div class="post">🚀 喵喵正在加载中...</div>
+            <div class="post">🐾 正在喵喵叫地加载内容...</div>
         </div>
     </div>
 
     <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
 
     <script>
-        // 1. 初始化 LeanCloud
+        // 1. 初始化 LeanCloud 国际版
         AV.init({
             appId: "KEVV8UiFOCg8pehjuwp0Qs4X-MdYXbMMI",
             appKey: "jv3DhOJKIURFTTDTNAieGrDS",
             serverURL: "https://kevv8uif.api.lncldglobal.com"
         });
 
-        // 2. 搜索逻辑
+        // 2. 搜索功能
         function toggleSearch() {
             const input = document.getElementById('searchInput');
             input.classList.toggle('active');
-            if (input.classList.contains('active')) {
-                input.focus();
-            } else {
-                input.value = '';
-                filterPosts(''); // 关闭时重置搜索
-            }
+            if(input.classList.contains('active')) input.focus();
+            else { input.value = ''; filterPosts(''); }
         }
-
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            filterPosts(e.target.value.toLowerCase());
-        });
-
-        function filterPosts(keyword) {
-            const posts = document.querySelectorAll('.post');
-            posts.forEach(post => {
-                const title = post.querySelector('h2').innerText.toLowerCase();
-                const content = post.querySelector('.content').innerText.toLowerCase();
-                if (title.includes(keyword) || content.includes(keyword)) {
-                    post.classList.remove('hidden');
-                } else {
-                    post.classList.add('hidden');
-                }
+        document.getElementById('searchInput').addEventListener('input', (e) => filterPosts(e.target.value.toLowerCase()));
+        
+        function filterPosts(kw) {
+            document.querySelectorAll('.post').forEach(p => {
+                const text = p.innerText.toLowerCase();
+                p.classList.toggle('hidden', !text.includes(kw));
             });
         }
 
-        // 其他原有逻辑（打赏、点赞、加载文章）
-        function togglePay(show) { /* ...保持不变... */ }
-        async function getLikeCount(id, span) { /* ...保持不变... */ }
-        async function handleLike(btn, id) { /* ...保持不变... */ }
-        function toggleComments(id) { /* ...保持不变... */ }
+        // 3. 打赏控制
+        function togglePay(s) { document.getElementById('pay-overlay').style.display = s ? 'flex' : 'none'; }
 
+        // 4. 点赞逻辑
+        async function getLikeCount(id, span) {
+            try {
+                const q = new AV.Query('Counter');
+                q.equalTo('issueId', String(id));
+                const r = await q.first();
+                span.innerText = r ? r.get('likes') : 0;
+            } catch(e) { span.innerText = 0; }
+        }
+
+        async function handleLike(btn, id) {
+            const liked = JSON.parse(localStorage.getItem('liked_posts') || '{}');
+            if (liked[id]) return alert('点过赞啦！');
+            try {
+                const q = new AV.Query('Counter');
+                q.equalTo('issueId', String(id));
+                let c = await q.first();
+                if (!c) {
+                    const Obj = AV.Object.extend('Counter');
+                    c = new Obj();
+                    c.set('issueId', String(id));
+                    c.set('likes', 1);
+                    const acl = new AV.ACL(); acl.setPublicReadAccess(true); acl.setPublicWriteAccess(true);
+                    c.setACL(acl);
+                } else { c.increment('likes', 1); }
+                await c.save();
+                liked[id] = true; localStorage.setItem('liked_posts', JSON.stringify(liked));
+                btn.classList.add('active');
+                const s = btn.querySelector('.count'); s.innerText = parseInt(s.innerText) + 1;
+                btn.firstChild.textContent = '❤️ 已点赞 ';
+            } catch(e) { alert('点赞出错了'); }
+        }
+
+        // 5. 评论控制
+        function toggleComments(id) {
+            const el = document.getElementById(`comment-box-${id}`);
+            const isH = el.style.display === 'none';
+            el.style.display = isH ? 'block' : 'none';
+            if (isH && window.renderCusdis) window.renderCusdis(el.querySelector('#cusdis_thread'));
+        }
+
+        // 6. 获取文章并处理媒体
         const GITHUB_USERNAME = 'aeribare0108';
         const REPO_NAME = 'aeribare0108.github.io';
         const CUSDIS_APP_ID = 'ba5226e8-dac4-45ae-9acb-27723c830cc0';
@@ -145,51 +216,50 @@
                 issues.forEach(issue => {
                     const postElement = document.createElement('div');
                     postElement.className = 'post';
+                    
+                    // 媒体转换逻辑
+                    let tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = marked.parse(issue.body || "");
+                    
+                    tempDiv.querySelectorAll('a').forEach(link => {
+                        const href = link.getAttribute('href');
+                        // 视频判断
+                        if (href.match(/\.(mp4|webm|mov|m4v)/i) || href.includes('user-attachments')) {
+                            const v = document.createElement('video');
+                            v.src = href; v.controls = true; v.setAttribute('playsinline', '');
+                            link.parentNode.replaceChild(v, link);
+                        }
+                        // 音频判断
+                        else if (href.match(/\.(mp3|wav|ogg|m4a)/i)) {
+                            const a = document.createElement('audio');
+                            a.src = href; a.controls = true;
+                            link.parentNode.replaceChild(a, link);
+                        }
+                    });
+
                     const date = new Date(issue.created_at).toLocaleDateString();
-                    const isLiked = JSON.parse(localStorage.getItem('liked_posts') || '{}')[issue.id];
+                    const liked = JSON.parse(localStorage.getItem('liked_posts') || '{}')[issue.id];
 
                     postElement.innerHTML = `
                         <h2>${issue.title}</h2>
                         <small>📅 ${date}</small>
-                        <div class="content">${marked.parse(issue.body || "")}</div>
+                        <div class="content">${tempDiv.innerHTML}</div>
                         <div class="action-bar">
-                            <button class="like-btn ${isLiked?'active':''}" onclick="handleLike(this, '${issue.id}')">
-                                ${isLiked?'❤️ 已赞':'🤍 点赞'} <span class="count" id="count-${issue.id}">0</span>
+                            <button class="btn-interact like-btn ${liked?'active':''}" onclick="handleLike(this, '${issue.id}')">
+                                ${liked?'❤️ 已点赞':'🤍 点赞'} <span class="count" id="count-${issue.id}">0</span>
                             </button>
-                            <button class="comment-toggle" onclick="toggleComments('${issue.id}')">💬 留言</button>
+                            <button class="btn-interact comment-toggle" onclick="toggleComments('${issue.id}')">💬 留言互动</button>
                         </div>
-                        <div id="comment-box-${issue.id}" style="display:none; margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
+                        <div id="comment-box-${issue.id}" style="display:none; margin-top:25px; border-top:1px solid #ddd; padding-top:20px;">
                             <div id="cusdis_thread" data-host="https://cusdis.com" data-app-id="${CUSDIS_APP_ID}" data-page-id="${issue.id}" data-page-url="${window.location.href}#${issue.id}" data-page-title="${issue.title}"></div>
                         </div>
                     `;
                     container.appendChild(postElement);
                     getLikeCount(issue.id, document.getElementById(`count-${issue.id}`));
                 });
-            } catch (e) { container.innerHTML = '<div class="post">❌ 加载失败</div>'; }
+            } catch (e) { container.innerHTML = '<div class="post">❌ 加载失败，请刷新</div>'; }
         }
         fetchPosts();
-
-        // 补全缺失的辅助函数
-        function togglePay(show) { document.querySelector('#pay-overlay').style.display = show ? 'flex' : 'none'; }
-        async function getLikeCount(issueId, span) {
-            try {
-                const query = new AV.Query('Counter');
-                query.equalTo('issueId', String(issueId));
-                const res = await query.first();
-                span.innerText = res ? res.get('likes') : 0;
-            } catch(e) {}
-        }
-        async function handleLike(btn, id) {
-            // ... 使用之前的 LeanCloud handleLike 逻辑 ...
-            // (此处为了简短未重复粘贴，请保留你上个版本中的完整 handleLike 函数内容)
-        }
     </script>
-    
-    <div id="pay-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:200;" onclick="togglePay(false)">
-        <div style="background:white; padding:20px; border-radius:24px; position:relative;" onclick="event.stopPropagation()">
-            <img src="payment.jpg" style="max-width:300px; border-radius:15px;">
-            <div style="position:absolute; top:-10px; right:-10px; background:#ff4757; color:white; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;" onclick="togglePay(false)">×</div>
-        </div>
-    </div>
 </body>
 </html>
