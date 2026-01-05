@@ -47,7 +47,7 @@
         .post h2 { margin-top: 0; color: #0056b3; margin-bottom: 8px; }
         .post small { color: #666; display: block; margin-bottom: 20px; font-family: monospace; }
 
-        /* 4. 右侧悬浮面板 */
+        /* 4. 右侧悬浮面板 (核心修正处) */
         .side-panel {
             position: fixed; right: 30px; top: 120px;
             display: flex; flex-direction: column; gap: 12px;
@@ -60,12 +60,12 @@
             font-size: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5);
             transition: 0.3s; text-align: center; cursor: pointer;
+            white-space: nowrap; /* 核心：防止文字换行 */
         }
         .side-btn:hover { transform: translateY(-3px); background: #fff; color: #0056b3; }
         .btn-pay { background: #ff4757; color: white; border: none; }
-        .btn-pay:hover { background: #ff6b81; color: white; }
 
-        /* 5. 支付弹窗 (JPG版本) */
+        /* 5. 支付弹窗 */
         #pay-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
@@ -75,26 +75,36 @@
             background: white; padding: 15px; border-radius: 24px;
             position: relative; max-width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
-        .pay-card img { 
-            max-width: 320px; width: 100%; display: block; 
-            border-radius: 15px; /* 微圆角处理 */
-        }
+        .pay-card img { max-width: 320px; width: 100%; display: block; border-radius: 15px; }
         .close-btn {
             position: absolute; top: -12px; right: -12px;
             background: #ff4757; color: white; width: 32px; height: 32px;
             border-radius: 50%; border: 2px solid white; cursor: pointer; 
-            font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center;
+            font-size: 18px; display: flex; align-items: center; justify-content: center;
         }
 
-        /* 媒体适配 */
-        .content img, .content video { max-width: 100% !important; height: auto !important; display: block; margin: 20px 0; border-radius: 12px; }
-        
-        @media (max-width: 1000px) {
+        /* 6. 手机端适配 (针对字号大和按钮换行的修正) */
+        @media (max-width: 600px) {
             .side-panel { 
-                position: static; flex-direction: row; 
-                justify-content: center; margin-bottom: 25px; padding: 0 20px;
+                position: static; /* 手机端取消固定位置 */
+                flex-direction: row; /* 横向排列 */
+                justify-content: center; 
+                margin-bottom: 25px; 
+                gap: 8px; /* 缩小按钮间距 */
+                padding: 0 10px;
             }
+            .side-btn {
+                padding: 10px 14px; /* 缩小内边距 */
+                font-size: 12px; /* 减小字号 */
+                flex: 1; /* 让按钮等宽平分 */
+                max-width: 110px; /* 限制最大宽度 */
+            }
+            .header { padding: 10px 15px; margin-bottom: 20px; }
+            h1 { font-size: 1.1rem; }
         }
+
+        /* 内容媒体适配 */
+        .content img, .content video { max-width: 100% !important; height: auto !important; display: block; margin: 20px 0; border-radius: 12px; }
     </style>
 </head>
 <body>
