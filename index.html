@@ -10,7 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     
     <style>
-        /* 1. 全局与背景 */
+        /* 1. 背景与全局 */
         #video-background {
             position: fixed; top: 50%; left: 50%;
             min-width: 100%; min-height: 100%;
@@ -20,10 +20,10 @@
         body { font-family: -apple-system, sans-serif; margin: 0; padding: 0; color: #222; background: #000; overflow-x: hidden; }
         .main-container { max-width: 750px; margin: 0 auto; padding: 40px 20px; position: relative; z-index: 1; }
 
-        /* 2. 防下载保护 CSS */
+        /* 2. 防下载保护 */
         img, video { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-user-drag: none; }
 
-        /* 3. 顶栏 (带点击展开搜索) */
+        /* 3. 顶栏 (带搜索) */
         .header {
             display: flex; align-items: center; justify-content: space-between;
             background: rgba(255, 255, 255, 0.88); padding: 12px 25px; border-radius: 20px;
@@ -37,50 +37,44 @@
         .search-wrapper { display: flex; align-items: center; }
         .search-input {
             width: 0; opacity: 0; border: none; border-bottom: 2px solid #000;
-            background: transparent; outline: none; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: transparent; outline: none; transition: 0.4s;
         }
         .search-input.active { width: 160px; opacity: 1; padding: 5px 10px; margin-right: 10px; }
         .search-icon { cursor: pointer; font-size: 20px; }
 
-        /* 4. 【核心更新】圆形图标侧边栏 - 图片铺满 + 2px黑边 */
+        /* 4. 圆形侧边栏 (图片铺满 + 2px黑边) */
         .side-panel { 
             position: fixed; right: 30px; top: 120px; 
             display: flex; flex-direction: column; gap: 15px; z-index: 100; 
         }
         .side-icon-btn { 
-            width: 50px; height: 50px; 
-            background: #fff; 
-            border: 2px solid #000; /* 修改为 2px 边框 */
-            border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.3s ease; 
-            overflow: hidden; /* 必须溢出隐藏以裁剪图片 */
+            width: 50px; height: 50px; background: #fff; border: 2px solid #000; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.3s ease; overflow: hidden;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
-        .side-icon-btn img { 
-            width: 100%; height: 100%; /* 图片填满容器 */
-            object-fit: cover; /* 自动拉伸并裁剪，不留白 */
-        }
-        .side-icon-btn:hover { transform: scale(1.1); box-shadow: 0 6px 18px rgba(0,0,0,0.4); }
+        .side-icon-btn img { width: 100%; height: 100%; object-fit: cover; }
+        .side-icon-btn:hover { transform: scale(1.1); }
 
-        /* 5. 文章卡片与内容 */
+        /* 5. 文章卡片 */
         .post { 
             background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 28px;
-            margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.5); transition: opacity 0.3s;
+            margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.5);
         }
         .post.hidden { display: none; }
         .post h2 { margin-top: 0; color: #0056b3; font-size: 1.4rem; }
-        .post small { color: #888; display: block; margin-bottom: 15px; font-family: monospace; }
+        /* 时间显示样式优化 */
+        .post small { color: #888; display: block; margin-bottom: 15px; font-family: 'Courier New', Courier, monospace; font-weight: bold; }
         .content img, .content video { max-width: 100% !important; border-radius: 12px; margin: 15px 0; display: block; }
 
-        /* 6. 互动按钮 */
+        /* 6. 互动区 */
         .action-bar { display: flex; gap: 12px; margin-top: 20px; }
         .btn-interact { border: none; padding: 10px 18px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 13px; display: flex; align-items: center; gap: 6px; }
         .comment-toggle { background: #0056b3; color: white; }
         .like-btn { background: rgba(255, 71, 87, 0.1); color: #ff4757; border: 1.5px solid #ff4757; }
         .like-btn.active { background: #ff4757; color: white; }
 
-        /* 7. 支付弹窗 */
+        /* 7. 弹窗 */
         #pay-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 200; }
         .pay-card { background: white; padding: 20px; border-radius: 25px; position: relative; }
         .pay-card img { max-width: 300px; display: block; border-radius: 15px; }
@@ -104,20 +98,20 @@
                 <h1>喵苗田口草</h1>
             </div>
             <div class="search-wrapper">
-                <input type="text" id="searchInput" class="search-input" placeholder="输入搜索...">
+                <input type="text" id="searchInput" class="search-input" placeholder="搜搜看...">
                 <div class="search-icon" onclick="toggleSearch()">🔍</div>
             </div>
         </header>
 
         <div class="side-panel">
             <a href="https://xhslink.com/m/8c7qBm5fcST" target="_blank" class="side-icon-btn">
-                <img src="xiaohongshu.png" alt="小红书">
+                <img src="xiaohongshu.png" alt="XHS">
             </a>
             <a href="https://www.facebook.com/share/19JhjNVtCH/" target="_blank" class="side-icon-btn">
-                <img src="facebook.png" alt="脸书">
+                <img src="facebook.png" alt="FB">
             </a>
             <div class="side-icon-btn" onclick="togglePay(true)">
-                <img src="wallet.png" alt="打赏">
+                <img src="wallet.png" alt="Pay">
             </div>
         </div>
 
@@ -129,14 +123,13 @@
         </div>
 
         <div id="posts-container">
-            <div class="post">🚀 正在加载...</div>
+            <div class="post">🚀 喵喵正在同步时间数据...</div>
         </div>
     </div>
 
     <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
 
     <script>
-        // 核心脚本 (防下载、点赞、搜索、文章加载)
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.onkeydown = e => { if (e.keyCode == 123) return false; };
 
@@ -188,7 +181,7 @@
                 btn.classList.add('active');
                 const s = btn.querySelector('.count'); s.innerText = parseInt(s.innerText) + 1;
                 btn.firstChild.textContent = '❤️ 已点赞 ';
-            } catch(e) { alert('点赞出错'); }
+            } catch(e) { alert('点赞失败'); }
         }
 
         function toggleComments(id) {
@@ -232,7 +225,16 @@
                         }
                     });
 
-                    const date = new Date(issue.created_at).toLocaleDateString();
+                    // --- 关键修改：显示精确到分钟的时间 ---
+                    const date = new Date(issue.created_at).toLocaleString('zh-CN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    });
+
                     const liked = JSON.parse(localStorage.getItem('liked_posts') || '{}')[issue.id];
 
                     postElement.innerHTML = `
@@ -241,7 +243,7 @@
                         <div class="content">${tempDiv.innerHTML}</div>
                         <div class="action-bar">
                             <button class="btn-interact like-btn ${liked?'active':''}" onclick="handleLike(this, '${issue.id}')">
-                                ${liked?'❤️ 已点赞 ':'🤍 点赞 '} <span class="count" id="count-${issue.id}">0</span>
+                                ${liked?'❤️ 已赞 ':'🤍 点赞 '} <span class="count" id="count-${issue.id}">0</span>
                             </button>
                             <button class="btn-interact comment-toggle" onclick="toggleComments('${issue.id}')">💬 留言</button>
                         </div>
