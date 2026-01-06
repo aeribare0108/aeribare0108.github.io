@@ -21,9 +21,7 @@
         .main-container { max-width: 750px; margin: 0 auto; padding: 40px 20px; position: relative; z-index: 1; }
 
         /* 2. 防下载保护 CSS */
-        img, video {
-            -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-user-drag: none;
-        }
+        img, video { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-user-drag: none; }
 
         /* 3. 顶栏 (带点击展开搜索) */
         .header {
@@ -33,54 +31,51 @@
             margin-bottom: 35px; border: 1px solid rgba(255, 255, 255, 0.4);
         }
         .header-left { display: flex; align-items: center; }
-        .logo { width: 42px; height: 42px; cursor: pointer; transition: 0.3s; }
+        .logo { width: 42px; height: 42px; cursor: pointer; }
         h1 { margin: 0; font-size: 1.15rem; color: #1a1a1a; margin-left: 10px; }
 
         .search-wrapper { display: flex; align-items: center; }
         .search-input {
-            width: 0; opacity: 0; border: none; border-bottom: 2.5px solid #000;
+            width: 0; opacity: 0; border: none; border-bottom: 2px solid #000;
             background: transparent; outline: none; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .search-input.active { width: 160px; opacity: 1; padding: 5px 10px; margin-right: 10px; }
         .search-icon { cursor: pointer; font-size: 20px; }
 
-        /* 4. 圆形图标侧边栏 (3px 黑色粗边框) */
+        /* 4. 【核心更新】圆形图标侧边栏 - 图片铺满 + 2px黑边 */
         .side-panel { 
             position: fixed; right: 30px; top: 120px; 
             display: flex; flex-direction: column; gap: 15px; z-index: 100; 
         }
         .side-icon-btn { 
-            width: 48px; height: 48px; background: #fff; 
-            border: 3px solid #000; border-radius: 50%; 
+            width: 50px; height: 50px; 
+            background: #fff; 
+            border: 2px solid #000; /* 修改为 2px 边框 */
+            border-radius: 50%; 
             display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.3s; overflow: hidden;
+            cursor: pointer; transition: 0.3s ease; 
+            overflow: hidden; /* 必须溢出隐藏以裁剪图片 */
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
-        .side-icon-btn img { width: 60%; height: 60%; object-fit: contain; }
-        .side-icon-btn:hover { transform: scale(1.1); background: #f8f8f8; }
+        .side-icon-btn img { 
+            width: 100%; height: 100%; /* 图片填满容器 */
+            object-fit: cover; /* 自动拉伸并裁剪，不留白 */
+        }
+        .side-icon-btn:hover { transform: scale(1.1); box-shadow: 0 6px 18px rgba(0,0,0,0.4); }
 
-        /* 5. 文章卡片 */
+        /* 5. 文章卡片与内容 */
         .post { 
             background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 28px;
-            margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.5);
-            transition: opacity 0.3s;
+            margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.5); transition: opacity 0.3s;
         }
         .post.hidden { display: none; }
         .post h2 { margin-top: 0; color: #0056b3; font-size: 1.4rem; }
         .post small { color: #888; display: block; margin-bottom: 15px; font-family: monospace; }
-        
-        /* 媒体比例 */
-        .content img { max-width: 100% !important; height: auto !important; border-radius: 12px; margin: 15px 0; display: block; }
-        .content video { max-width: 100% !important; border-radius: 12px; margin: 15px 0; display: block; }
-        .content audio { width: 100%; margin: 15px 0; }
+        .content img, .content video { max-width: 100% !important; border-radius: 12px; margin: 15px 0; display: block; }
 
-        /* 6. 互动区 */
+        /* 6. 互动按钮 */
         .action-bar { display: flex; gap: 12px; margin-top: 20px; }
-        .btn-interact { 
-            border: none; padding: 10px 18px; border-radius: 12px; 
-            cursor: pointer; font-weight: bold; font-size: 13px;
-            display: flex; align-items: center; gap: 6px; transition: 0.3s;
-        }
+        .btn-interact { border: none; padding: 10px 18px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 13px; display: flex; align-items: center; gap: 6px; }
         .comment-toggle { background: #0056b3; color: white; }
         .like-btn { background: rgba(255, 71, 87, 0.1); color: #ff4757; border: 1.5px solid #ff4757; }
         .like-btn.active { background: #ff4757; color: white; }
@@ -91,12 +86,8 @@
         .pay-card img { max-width: 300px; display: block; border-radius: 15px; }
         .close-btn { position: absolute; top: -10px; right: -10px; background: #000; color: #fff; width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
 
-        /* 手机适配 */
         @media (max-width: 600px) {
-            .side-panel { position: static; flex-direction: row; justify-content: center; margin-bottom: 25px; }
-            .side-icon-btn { width: 42px; height: 42px; }
-            .header { padding: 10px 15px; }
-            h1 { font-size: 1rem; }
+            .side-panel { position: static; flex-direction: row; justify-content: center; margin-bottom: 25px; gap: 20px; }
         }
     </style>
 </head>
@@ -113,20 +104,20 @@
                 <h1>喵苗田口草</h1>
             </div>
             <div class="search-wrapper">
-                <input type="text" id="searchInput" class="search-input" placeholder="关键词搜索...">
+                <input type="text" id="searchInput" class="search-input" placeholder="输入搜索...">
                 <div class="search-icon" onclick="toggleSearch()">🔍</div>
             </div>
         </header>
 
         <div class="side-panel">
             <a href="https://xhslink.com/m/8c7qBm5fcST" target="_blank" class="side-icon-btn">
-                <img src="xiaohongshu.png" alt="XHS">
+                <img src="xiaohongshu.png" alt="小红书">
             </a>
             <a href="https://www.facebook.com/share/19JhjNVtCH/" target="_blank" class="side-icon-btn">
-                <img src="facebook.png" alt="FB">
+                <img src="facebook.png" alt="脸书">
             </a>
             <div class="side-icon-btn" onclick="togglePay(true)">
-                <img src="wallet.png" alt="Pay">
+                <img src="wallet.png" alt="打赏">
             </div>
         </div>
 
@@ -138,47 +129,48 @@
         </div>
 
         <div id="posts-container">
-            <div class="post">🚀 正在同步喵喵云端数据...</div>
+            <div class="post">🚀 正在加载...</div>
         </div>
     </div>
 
     <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
 
     <script>
-        // --- 1. 防下载与保护逻辑 ---
-        document.addEventListener('contextmenu', e => e.preventDefault()); 
-        document.onkeydown = e => { if (e.keyCode == 123) return false; }; 
+        // 核心脚本 (防下载、点赞、搜索、文章加载)
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.onkeydown = e => { if (e.keyCode == 123) return false; };
 
-        // --- 2. 初始化 LeanCloud 国际版 ---
         AV.init({
             appId: "KEVV8UiFOCg8pehjuwp0Qs4X-MdYXbMMI",
             appKey: "jv3DhOJKIURFTTDTNAieGrDS",
             serverURL: "https://kevv8uif.api.lncldglobal.com"
         });
 
-        // --- 3. UI 逻辑 (搜索/弹窗) ---
         function toggleSearch() {
             const input = document.getElementById('searchInput');
             input.classList.toggle('active');
             if(input.classList.contains('active')) input.focus();
             else { input.value = ''; filterPosts(''); }
         }
+
         document.getElementById('searchInput').addEventListener('input', e => filterPosts(e.target.value.toLowerCase()));
+        
         function filterPosts(kw) {
             document.querySelectorAll('.post').forEach(p => {
                 const text = p.innerText.toLowerCase();
                 p.classList.toggle('hidden', !text.includes(kw));
             });
         }
+
         function togglePay(s) { document.getElementById('pay-overlay').style.display = s ? 'flex' : 'none'; }
 
-        // --- 4. 点赞逻辑 ---
         async function getLikeCount(id, span) {
             try {
                 const q = new AV.Query('Counter'); q.equalTo('issueId', String(id));
                 const r = await q.first(); span.innerText = r ? r.get('likes') : 0;
             } catch(e) { span.innerText = 0; }
         }
+
         async function handleLike(btn, id) {
             const liked = JSON.parse(localStorage.getItem('liked_posts') || '{}');
             if (liked[id]) return alert('点过赞啦！');
@@ -196,10 +188,9 @@
                 btn.classList.add('active');
                 const s = btn.querySelector('.count'); s.innerText = parseInt(s.innerText) + 1;
                 btn.firstChild.textContent = '❤️ 已点赞 ';
-            } catch(e) { alert('点赞出错了'); }
+            } catch(e) { alert('点赞出错'); }
         }
 
-        // --- 5. 评论展开 ---
         function toggleComments(id) {
             const el = document.getElementById(`comment-box-${id}`);
             const isH = el.style.display === 'none';
@@ -207,7 +198,6 @@
             if (isH && window.renderCusdis) window.renderCusdis(el.querySelector('#cusdis_thread'));
         }
 
-        // --- 6. 文章加载与媒体转换 ---
         const GITHUB_USERNAME = 'aeribare0108';
         const REPO_NAME = 'aeribare0108.github.io';
         const CUSDIS_APP_ID = 'ba5226e8-dac4-45ae-9acb-27723c830cc0';
@@ -226,13 +216,12 @@
                     let tempDiv = document.createElement('div');
                     tempDiv.innerHTML = marked.parse(issue.body || "");
                     
-                    // 媒体转换 + 禁止下载
                     tempDiv.querySelectorAll('a').forEach(link => {
                         const href = link.getAttribute('href');
                         if (href.match(/\.(mp4|webm|mov|m4v)/i) || href.includes('user-attachments')) {
                             const v = document.createElement('video');
                             v.src = href; v.controls = true; v.setAttribute('playsinline', '');
-                            v.setAttribute('controlsList', 'nodownload'); // 屏蔽下载按钮
+                            v.setAttribute('controlsList', 'nodownload');
                             v.oncontextmenu = () => false;
                             link.parentNode.replaceChild(v, link);
                         } else if (href.match(/\.(mp3|wav|ogg|m4a)/i)) {
@@ -248,11 +237,11 @@
 
                     postElement.innerHTML = `
                         <h2>${issue.title}</h2>
-                        <small>📅 发布日期: ${date}</small>
+                        <small>📅 ${date}</small>
                         <div class="content">${tempDiv.innerHTML}</div>
                         <div class="action-bar">
                             <button class="btn-interact like-btn ${liked?'active':''}" onclick="handleLike(this, '${issue.id}')">
-                                ${liked?'❤️ 已赞 ':'🤍 点赞 '} <span class="count" id="count-${issue.id}">0</span>
+                                ${liked?'❤️ 已点赞 ':'🤍 点赞 '} <span class="count" id="count-${issue.id}">0</span>
                             </button>
                             <button class="btn-interact comment-toggle" onclick="toggleComments('${issue.id}')">💬 留言</button>
                         </div>
@@ -263,7 +252,7 @@
                     container.appendChild(postElement);
                     getLikeCount(issue.id, document.getElementById(`count-${issue.id}`));
                 });
-            } catch (e) { container.innerHTML = '<div class="post">❌ 文章加载失败</div>'; }
+            } catch (e) { container.innerHTML = '<div class="post">加载失败</div>'; }
         }
         fetchPosts();
     </script>
