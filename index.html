@@ -10,7 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     
     <style>
-        /* 1. 背景与全局 */
+        /* 1. 全局背景与布局 */
         #video-background {
             position: fixed; top: 50%; left: 50%;
             min-width: 100%; min-height: 100%;
@@ -20,68 +20,85 @@
         body { font-family: -apple-system, sans-serif; margin: 0; padding: 0; color: #222; background: #000; overflow-x: hidden; }
         .main-container { max-width: 750px; margin: 0 auto; padding: 40px 20px; position: relative; z-index: 1; }
 
-        /* 2. 防下载保护 */
-        img, video { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-user-drag: none; }
+        /* 2. 防下载与图片比例修复 */
+        img, video { 
+            -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-user-drag: none; 
+        }
+        /* 关键：确保文章内图片永远不拉伸 */
+        .content img { 
+            max-width: 100% !important; 
+            height: auto !important; 
+            display: block; 
+            margin: 15px auto; 
+            border-radius: 12px;
+            object-fit: contain; 
+        }
 
-        /* 3. 顶栏 (带搜索) */
+        /* 3. 响应式顶栏与搜索优化 */
         .header {
             display: flex; align-items: center; justify-content: space-between;
-            background: rgba(255, 255, 255, 0.88); padding: 12px 25px; border-radius: 20px;
+            background: rgba(255, 255, 255, 0.9); padding: 12px 20px; border-radius: 20px;
             backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            margin-bottom: 35px; border: 1px solid rgba(255, 255, 255, 0.4);
+            margin-bottom: 30px; border: 1px solid rgba(255, 255, 255, 0.4);
         }
-        .header-left { display: flex; align-items: center; }
-        .logo { width: 42px; height: 42px; cursor: pointer; }
-        h1 { margin: 0; font-size: 1.15rem; color: #1a1a1a; margin-left: 10px; }
+        .header-left { display: flex; align-items: center; flex-shrink: 0; }
+        .logo { width: 38px; height: 38px; cursor: pointer; }
+        h1 { margin: 0; font-size: 1.1rem; color: #1a1a1a; margin-left: 8px; white-space: nowrap; }
 
-        .search-wrapper { display: flex; align-items: center; }
+        .search-wrapper { display: flex; align-items: center; flex-grow: 1; justify-content: flex-end; }
         .search-input {
             width: 0; opacity: 0; border: none; border-bottom: 2px solid #000;
-            background: transparent; outline: none; transition: 0.4s;
+            background: transparent; outline: none; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 16px; /* 防止 iOS 自动放大 */
         }
-        .search-input.active { width: 160px; opacity: 1; padding: 5px 10px; margin-right: 10px; }
-        .search-icon { cursor: pointer; font-size: 20px; }
+        /* 手机端搜索框激活状态 */
+        .search-input.active { width: 60%; opacity: 1; padding: 5px 10px; margin-right: 5px; }
+        .search-icon { cursor: pointer; font-size: 20px; padding: 5px; flex-shrink: 0; }
 
         /* 4. 圆形侧边栏 (图片铺满 + 2px黑边) */
         .side-panel { 
-            position: fixed; right: 30px; top: 120px; 
+            position: fixed; right: 25px; top: 120px; 
             display: flex; flex-direction: column; gap: 15px; z-index: 100; 
         }
         .side-icon-btn { 
-            width: 50px; height: 50px; background: #fff; border: 2px solid #000; 
+            width: 48px; height: 48px; background: #fff; border: 2px solid #000; 
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.3s ease; overflow: hidden;
+            cursor: pointer; transition: 0.3s; overflow: hidden;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         .side-icon-btn img { width: 100%; height: 100%; object-fit: cover; }
-        .side-icon-btn:hover { transform: scale(1.1); }
 
-        /* 5. 文章卡片 */
+        /* 5. 文章内容样式 */
         .post { 
-            background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 28px;
-            margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.5);
+            background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 24px;
+            margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.5);
         }
         .post.hidden { display: none; }
-        .post h2 { margin-top: 0; color: #0056b3; font-size: 1.4rem; }
-        /* 时间显示样式优化 */
-        .post small { color: #888; display: block; margin-bottom: 15px; font-family: 'Courier New', Courier, monospace; font-weight: bold; }
-        .content img, .content video { max-width: 100% !important; border-radius: 12px; margin: 15px 0; display: block; }
+        .post h2 { margin-top: 0; color: #0056b3; font-size: 1.35rem; line-height: 1.4; }
+        .post small { color: #888; display: block; margin-bottom: 12px; font-family: monospace; font-weight: bold; }
+        
+        .content video { max-width: 100% !important; border-radius: 12px; margin: 15px 0; display: block; }
+        .content audio { width: 100%; margin: 10px 0; }
 
-        /* 6. 互动区 */
-        .action-bar { display: flex; gap: 12px; margin-top: 20px; }
-        .btn-interact { border: none; padding: 10px 18px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+        /* 6. 交互组件 */
+        .action-bar { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-interact { border: none; padding: 10px 16px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 13px; display: flex; align-items: center; gap: 6px; }
         .comment-toggle { background: #0056b3; color: white; }
         .like-btn { background: rgba(255, 71, 87, 0.1); color: #ff4757; border: 1.5px solid #ff4757; }
         .like-btn.active { background: #ff4757; color: white; }
 
-        /* 7. 弹窗 */
+        /* 7. 弹窗控制 */
         #pay-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 200; }
-        .pay-card { background: white; padding: 20px; border-radius: 25px; position: relative; }
-        .pay-card img { max-width: 300px; display: block; border-radius: 15px; }
-        .close-btn { position: absolute; top: -10px; right: -10px; background: #000; color: #fff; width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
+        .pay-card { background: white; padding: 15px; border-radius: 25px; position: relative; width: 85%; max-width: 320px; }
+        .pay-card img { width: 100%; display: block; border-radius: 15px; }
+        .close-btn { position: absolute; top: -12px; right: -12px; background: #000; color: #fff; width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
+        /* 移动端特殊微调 */
         @media (max-width: 600px) {
-            .side-panel { position: static; flex-direction: row; justify-content: center; margin-bottom: 25px; gap: 20px; }
+            .main-container { padding: 20px 15px; }
+            .side-panel { position: static; flex-direction: row; justify-content: center; margin-bottom: 25px; gap: 25px; }
+            .header { padding: 10px 15px; }
+            .search-input.active { width: 120px; } /* 移动端搜索框不要太长 */
         }
     </style>
 </head>
@@ -98,20 +115,20 @@
                 <h1>喵苗田口草</h1>
             </div>
             <div class="search-wrapper">
-                <input type="text" id="searchInput" class="search-input" placeholder="搜搜看...">
+                <input type="text" id="searchInput" class="search-input" placeholder="输入搜索...">
                 <div class="search-icon" onclick="toggleSearch()">🔍</div>
             </div>
         </header>
 
         <div class="side-panel">
             <a href="https://xhslink.com/m/8c7qBm5fcST" target="_blank" class="side-icon-btn">
-                <img src="xiaohongshu.png" alt="XHS">
+                <img src="xiaohongshu.png" alt="小红书">
             </a>
             <a href="https://www.facebook.com/share/19JhjNVtCH/" target="_blank" class="side-icon-btn">
-                <img src="facebook.png" alt="FB">
+                <img src="facebook.png" alt="脸书">
             </a>
             <div class="side-icon-btn" onclick="togglePay(true)">
-                <img src="wallet.png" alt="Pay">
+                <img src="wallet.png" alt="打赏">
             </div>
         </div>
 
@@ -123,30 +140,39 @@
         </div>
 
         <div id="posts-container">
-            <div class="post">🚀 喵喵正在同步时间数据...</div>
+            <div class="post">🚀 正在加载喵喵数据...</div>
         </div>
     </div>
 
     <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
 
     <script>
+        // 防下载保护
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.onkeydown = e => { if (e.keyCode == 123) return false; };
 
+        // 初始化 LeanCloud
         AV.init({
             appId: "KEVV8UiFOCg8pehjuwp0Qs4X-MdYXbMMI",
             appKey: "jv3DhOJKIURFTTDTNAieGrDS",
             serverURL: "https://kevv8uif.api.lncldglobal.com"
         });
 
+        // 搜索逻辑优化
         function toggleSearch() {
             const input = document.getElementById('searchInput');
             input.classList.toggle('active');
-            if(input.classList.contains('active')) input.focus();
-            else { input.value = ''; filterPosts(''); }
+            if(input.classList.contains('active')) {
+                input.focus();
+            } else {
+                input.value = '';
+                filterPosts('');
+            }
         }
 
-        document.getElementById('searchInput').addEventListener('input', e => filterPosts(e.target.value.toLowerCase()));
+        document.getElementById('searchInput').addEventListener('input', e => {
+            filterPosts(e.target.value.toLowerCase());
+        });
         
         function filterPosts(kw) {
             document.querySelectorAll('.post').forEach(p => {
@@ -157,6 +183,7 @@
 
         function togglePay(s) { document.getElementById('pay-overlay').style.display = s ? 'flex' : 'none'; }
 
+        // 点赞逻辑
         async function getLikeCount(id, span) {
             try {
                 const q = new AV.Query('Counter'); q.equalTo('issueId', String(id));
@@ -181,7 +208,7 @@
                 btn.classList.add('active');
                 const s = btn.querySelector('.count'); s.innerText = parseInt(s.innerText) + 1;
                 btn.firstChild.textContent = '❤️ 已点赞 ';
-            } catch(e) { alert('点赞失败'); }
+            } catch(e) { alert('点赞出错了'); }
         }
 
         function toggleComments(id) {
@@ -191,6 +218,7 @@
             if (isH && window.renderCusdis) window.renderCusdis(el.querySelector('#cusdis_thread'));
         }
 
+        // 加载 Issue 数据
         const GITHUB_USERNAME = 'aeribare0108';
         const REPO_NAME = 'aeribare0108.github.io';
         const CUSDIS_APP_ID = 'ba5226e8-dac4-45ae-9acb-27723c830cc0';
@@ -209,6 +237,7 @@
                     let tempDiv = document.createElement('div');
                     tempDiv.innerHTML = marked.parse(issue.body || "");
                     
+                    // 媒体链接转换
                     tempDiv.querySelectorAll('a').forEach(link => {
                         const href = link.getAttribute('href');
                         if (href.match(/\.(mp4|webm|mov|m4v)/i) || href.includes('user-attachments')) {
@@ -225,14 +254,10 @@
                         }
                     });
 
-                    // --- 关键修改：显示精确到分钟的时间 ---
+                    // 时间格式化
                     const date = new Date(issue.created_at).toLocaleString('zh-CN', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false
+                        year: 'numeric', month: '2-digit', day: '2-digit',
+                        hour: '2-digit', minute: '2-digit', hour12: false
                     });
 
                     const liked = JSON.parse(localStorage.getItem('liked_posts') || '{}')[issue.id];
