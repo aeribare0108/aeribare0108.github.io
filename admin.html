@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>NITOJU Studio · Admin</title>
+  <link rel="icon" href="nitoju.png" type="image/png">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background: #fff5f9;
+      color: #5a3e4b;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 1.2rem;
+      flex: 1;
+      width: 100%;
+    }
+
+    /* 头部 */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.8rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .logo-area img {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      object-fit: cover;
+      box-shadow: 0 6px 12px rgba(255, 182, 193, 0.3);
+    }
+
+    .studio-name {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      background: linear-gradient(145deg, #ff8da1, #fdc0d0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .badge {
+      background: white;
+      border-radius: 50px;
+      padding: 0.4rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #c95b7a;
+      border: 1px solid #ffe2ea;
+      box-shadow: 0 4px 10px rgba(255, 190, 200, 0.25);
+    }
+
+    .badge i {
+      color: #ff8da1;
+      width: 16px;
+      height: 16px;
+    }
+
+    /* 主体布局 */
+    .admin-layout {
+      display: flex;
+      gap: 1.8rem;
+      flex-wrap: wrap;
+    }
+
+    /* 表单卡片 */
+    .form-card {
+      flex: 1.3;
+      min-width: 300px;
+      background: white;
+      border-radius: 32px;
+      padding: 1.8rem;
+      box-shadow: 0 18px 32px rgba(255, 180, 200, 0.2);
+      border: 1px solid #ffe6ee;
+    }
+
+    .form-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #ff8da1;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #b34a66;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .form-group label i {
+      width: 14px;
+      height: 14px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1.5px solid #ffe2ea;
+      border-radius: 18px;
+      background: #fffbfd;
+      color: #5a3e4b;
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .form-control:focus {
+      border-color: #ffb0c8;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(255, 190, 210, 0.25);
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    /* 图片上传 */
+    .upload-area {
+      border: 2px dashed #ffc1d0;
+      border-radius: 22px;
+      padding: 1.5rem;
+      text-align: center;
+      background: #fffafc;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .upload-area:hover {
+      background: #fff2f7;
+      border-color: #ff9ab0;
+    }
+
+    .upload-area.has-image {
+      border-style: solid;
+      padding: 0.5rem;
+    }
+
+    .upload-area i {
+      color: #ff8da1;
+      width: 32px;
+      height: 32px;
+      margin-bottom: 0.5rem;
+    }
+
+    .upload-text {
+      font-size: 0.85rem;
+      color: #b56b80;
+    }
+
+    .preview-img {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 14px;
+      object-fit: cover;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    /* 按钮 */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.8rem 1.6rem;
+      border-radius: 50px;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.3px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #ff8da1, #ffb0c8);
+      color: white;
+      box-shadow: 0 8px 18px rgba(255, 140, 170, 0.4);
+      width: 100%;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 22px rgba(255, 140, 170, 0.5);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn i {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* 作品列表 (侧边) */
+    .list-card {
+      flex: 1;
+      min-width: 280px;
+      background: white;
+      border-radius: 32px;
+      padding: 1.8rem;
+      box-shadow: 0 18px 32px rgba(255, 180, 200, 0.2);
+      border: 1px solid #ffe6ee;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .list-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #ff8da1;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .count-badge {
+      background: #ffe2ea;
+      color: #b34a66;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 0.2rem 0.8rem;
+      border-radius: 40px;
+      border: 1px solid #ffc1d0;
+    }
+
+    .artwork-list {
+      overflow-y: auto;
+      flex: 1;
+      margin-top: 0.5rem;
+      padding-right: 0.3rem;
+    }
+
+    .artwork-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .artwork-list::-webkit-scrollbar-thumb {
+      background: #ffd0dc;
+      border-radius: 10px;
+    }
+
+    .list-item {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.7rem;
+      border-radius: 18px;
+      background: #fffafc;
+      margin-bottom: 0.6rem;
+      border: 1px solid #ffeef3;
+      transition: all 0.2s;
+    }
+
+    .list-item:hover {
+      background: #fff2f7;
+      border-color: #ffd0dc;
+    }
+
+    .list-item img {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      object-fit: cover;
+      background: #ffe2ea;
+      flex-shrink: 0;
+    }
+
+    .list-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .list-info .title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #4e2e3a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .list-info .tag {
+      font-size: 0.7rem;
+      color: #d99aab;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .list-delete {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #e8a0b4;
+      padding: 0.3rem;
+      border-radius: 50%;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .list-delete:hover {
+      background: #ffe2ea;
+      color: #d14a6e;
+    }
+
+    .list-delete i {
+      width: 16px;
+      height: 16px;
+    }
+
+    .empty-list {
+      text-align: center;
+      padding: 2rem 0.5rem;
+      color: #d29eb0;
+      font-size: 0.85rem;
+    }
+
+    /* Toast 提示 */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: linear-gradient(135deg, #ff8da1, #ffb0c8);
+      color: white;
+      padding: 0.9rem 1.8rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      box-shadow: 0 12px 28px rgba(255, 140, 170, 0.4);
+      opacity: 0;
+      transition: all 0.35s;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.error {
+      background: linear-gradient(135deg, #e06a8a, #d14a6e);
+    }
+
+    .toast i {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* 手机适配 */
+    @media (max-width: 700px) {
+      .app { padding: 1rem; }
+      .studio-name { font-size: 1.3rem; }
+      .logo-area img { width: 36px; height: 36px; }
+      .admin-layout { flex-direction: column; gap: 1.2rem; }
+      .form-card, .list-card { padding: 1.3rem; border-radius: 24px; }
+      .list-card { max-height: none; }
+    }
+
+    .footer {
+      text-align: center;
+      padding: 1.5rem;
+      color: #d29eb0;
+      font-size: 0.8rem;
+      border-top: 1px solid #ffe2ea;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="logo-area">
+        <img src="nitoju.png" alt="NITOJU Studio logo">
+        <span class="studio-name">NITOJU Studio</span>
+      </div>
+      <div class="header-right">
+        <div class="badge" id="langBadge">
+          <i data-lucide="languages"></i>
+          <span id="langText">EN</span>
+        </div>
+        <div class="badge">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Admin</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-layout">
+      <!-- 发布表单 -->
+      <div class="form-card">
+        <h2 class="form-title">
+          <i data-lucide="upload-cloud"></i>
+          <span id="formTitle">发布作品</span>
+        </h2>
+
+        <form id="artworkForm">
+          <!-- 标题 -->
+          <div class="form-group">
+            <label for="title">
+              <i data-lucide="type"></i>
+              <span id="labelTitle">标题</span>
+            </label>
+            <input type="text" id="title" class="form-control" placeholder="作品标题" required>
+          </div>
+
+          <!-- 标签 -->
+          <div class="form-group">
+            <label for="tags">
+              <i data-lucide="tag"></i>
+              <span id="labelTags">标签</span>
+            </label>
+            <input type="text" id="tags" class="form-control" placeholder="例如：插画, 原创, 角色">
+          </div>
+
+          <!-- 详情 -->
+          <div class="form-group">
+            <label for="description">
+              <i data-lucide="align-left"></i>
+              <span id="labelDesc">详情</span>
+            </label>
+            <textarea id="description" class="form-control" placeholder="作品描述..."></textarea>
+          </div>
+
+          <!-- 图片上传 -->
+          <div class="form-group">
+            <label>
+              <i data-lucide="image"></i>
+              <span id="labelImage">作品图片</span>
+            </label>
+            <div class="upload-area" id="uploadArea">
+              <input type="file" class="file-input" id="imageInput" accept="image/*">
+              <div id="uploadPlaceholder">
+                <i data-lucide="image-plus"></i>
+                <p class="upload-text" id="uploadText">点击上传图片</p>
+              </div>
+              <img id="previewImg" class="preview-img" style="display:none;" alt="预览">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <i data-lucide="send"></i>
+            <span id="btnPublishText">发布作品</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- 作品列表 -->
+      <div class="list-card">
+        <div class="list-header">
+          <h2 class="list-title">
+            <i data-lucide="gallery-vertical-end"></i>
+            <span id="listTitle">作品列表</span>
+          </h2>
+          <span class="count-badge" id="countBadge">0</span>
+        </div>
+        <div class="artwork-list" id="artworkList">
+          <div class="empty-list" id="emptyList">加载中...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <span id="footerText">© 2025 NITOJU Studio · Admin</span>
+  </footer>
+
+  <!-- Toast 容器 -->
+  <div class="toast" id="toast">
+    <i data-lucide="check-circle"></i>
+    <span id="toastText">操作成功</span>
+  </div>
+
+  <!-- Firebase 配置与逻辑 -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+    import {
+      getFirestore, collection, getDocs, addDoc, deleteDoc, doc,
+      query, orderBy, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCYXQTu_ZMq37kCbSBZUgD1twr5QvKLunM",
+      authDomain: "aeribare.firebaseapp.com",
+      projectId: "aeribare",
+      storageBucket: "aeribare.firebasestorage.app",
+      messagingSenderId: "602128037459",
+      appId: "1:602128037459:web:370d2b0215247a74dab8a6",
+      measurementId: "G-KWK7PXSW0J"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // 暴露到全局供内部使用（也方便调试）
+    window.__db = db;
+    window.__firestore = { collection, getDocs, addDoc, deleteDoc, doc, query, orderBy, serverTimestamp };
+
+    // ----- 语言检测 -----
+    const userLang = navigator.language || navigator.userLanguage;
+    const isChinese = userLang.toLowerCase().startsWith('zh');
+    const i18n = {
+      zh: {
+        formTitle: '发布作品',
+        labelTitle: '标题',
+        labelTags: '标签',
+        labelDesc: '详情',
+        labelImage: '作品图片',
+        uploadText: '点击上传图片',
+        btnPublishText: '发布作品',
+        listTitle: '作品列表',
+        footerText: '© 2025 NITOJU Studio · Admin',
+        langText: '中文',
+        toastSuccess: '作品发布成功！',
+        toastDeleted: '作品已删除',
+        toastError: '操作失败，请重试',
+        toastFillRequired: '请填写标题并上传图片',
+        loading: '加载中...',
+        emptyList: '还没有作品，快去发布吧 ✨',
+        confirmDelete: '确定要删除这篇作品吗？',
+        publishing: '发布中...',
+        countUnit: '件'
+      },
+      en: {
+        formTitle: 'Publish Artwork',
+        labelTitle: 'Title',
+        labelTags: 'Tags',
+        labelDesc: 'Description',
+        labelImage: 'Artwork Image',
+        uploadText: 'Click to upload image',
+        btnPublishText: 'Publish',
+        listTitle: 'Artwork List',
+        footerText: '© 2025 NITOJU Studio · Admin',
+        langText: 'EN',
+        toastSuccess: 'Artwork published!',
+        toastDeleted: 'Artwork deleted',
+        toastError: 'Operation failed, please retry',
+        toastFillRequired: 'Please fill title and upload image',
+        loading: 'Loading...',
+        emptyList: 'No artworks yet. Go publish ✨',
+        confirmDelete: 'Delete this artwork?',
+        publishing: 'Publishing...',
+        countUnit: 'items'
+      }
+    };
+    const t = isChinese ? i18n.zh : i18n.en;
+
+    // 应用翻译
+    document.getElementById('formTitle').textContent = t.formTitle;
+    document.getElementById('labelTitle').textContent = t.labelTitle;
+    document.getElementById('labelTags').textContent = t.labelTags;
+    document.getElementById('labelDesc').textContent = t.labelDesc;
+    document.getElementById('labelImage').textContent = t.labelImage;
+    document.getElementById('uploadText').textContent = t.uploadText;
+    document.getElementById('btnPublishText').textContent = t.btnPublishText;
+    document.getElementById('listTitle').textContent = t.listTitle;
+    document.getElementById('footerText').textContent = t.footerText;
+    document.getElementById('langText').textContent = t.langText;
+    document.documentElement.lang = isChinese ? 'zh' : 'en';
+
+    // ----- 图标渲染 -----
+    function renderIcons() {
+      if (window.lucide) {
+        lucide.createIcons();
+      } else {
+        setTimeout(renderIcons, 100);
+      }
+    }
+    renderIcons();
+
+    // ----- 禁用右键和 F12 -----
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'F12' || e.keyCode === 123) {
+        e.preventDefault();
+        return false;
+      }
+      if (e.ctrlKey && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) {
+        e.preventDefault();
+        return false;
+      }
+      if (e.ctrlKey && ['u','U'].includes(e.key)) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    // ----- Toast 提示 -----
+    const toast = document.getElementById('toast');
+    const toastText = document.getElementById('toastText');
+    let toastTimer = null;
+
+    function showToast(message, isError = false) {
+      toastText.textContent = message;
+      toast.classList.toggle('error', isError);
+      toast.classList.add('show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2600);
+    }
+
+    // ----- 图片上传预览 -----
+    const uploadArea = document.getElementById('uploadArea');
+    const imageInput = document.getElementById('imageInput');
+    const previewImg = document.getElementById('previewImg');
+    const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+    let currentImageData = null; // base64
+
+    uploadArea.addEventListener('click', () => imageInput.click());
+
+    imageInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        showToast(isChinese ? '请选择图片文件' : 'Please select an image file', true);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        currentImageData = ev.target.result;
+        previewImg.src = currentImageData;
+        previewImg.style.display = 'block';
+        uploadPlaceholder.style.display = 'none';
+        uploadArea.classList.add('has-image');
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // 拖拽上传
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.style.background = '#fff2f7';
+    });
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.style.background = '#fffafc';
+    });
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.style.background = '#fffafc';
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        imageInput.files = e.dataTransfer.files;
+        const event = new Event('change', { bubbles: true });
+        imageInput.dispatchEvent(event);
+      }
+    });
+
+    // ----- 作品列表加载 -----
+    const artworkList = document.getElementById('artworkList');
+    const countBadge = document.getElementById('countBadge');
+    const emptyList = document.getElementById('emptyList');
+
+    async function loadArtworks() {
+      try {
+        const artworksRef = collection(db, "artworks");
+        let q;
+        try {
+          q = query(artworksRef, orderBy("createdAt", "desc"));
+        } catch (e) {
+          q = query(artworksRef);
+        }
+        const snapshot = await getDocs(q);
+
+        countBadge.textContent = snapshot.size;
+
+        if (snapshot.empty) {
+          artworkList.innerHTML = `<div class="empty-list">${t.emptyList}</div>`;
+          return;
+        }
+
+        artworkList.innerHTML = '';
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const title = data.title || (isChinese ? '无标题' : 'Untitled');
+          const tags = data.tags || '';
+          const imageUrl = data.imageUrl || '';
+
+          const safeTitle = String(title).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const safeTags = String(tags).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+          const item = document.createElement('div');
+          item.className = 'list-item';
+          item.innerHTML = `
+            <img src="${imageUrl || 'https://via.placeholder.com/46x46?text=?'}" alt="thumb" onerror="this.src='https://via.placeholder.com/46x46?text=?'">
+            <div class="list-info">
+              <div class="title">${safeTitle}</div>
+              <div class="tag">${safeTags || (isChinese ? '无标签' : 'No tags')}</div>
+            </div>
+            <button class="list-delete" data-id="${docSnap.id}" title="${isChinese ? '删除' : 'Delete'}">
+              <i data-lucide="trash-2"></i>
+            </button>
+          `;
+          artworkList.appendChild(item);
+        });
+
+        // 绑定删除事件
+        document.querySelectorAll('.list-delete').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const id = e.currentTarget.dataset.id;
+            if (!confirm(t.confirmDelete)) return;
+            try {
+              await deleteDoc(doc(db, "artworks", id));
+              showToast(t.toastDeleted);
+              loadArtworks();
+            } catch (err) {
+              console.error(err);
+              showToast(t.toastError, true);
+            }
+          });
+        });
+
+        renderIcons();
+      } catch (err) {
+        console.error('加载作品失败:', err);
+        artworkList.innerHTML = `<div class="empty-list">${isChinese ? '加载失败' : 'Failed to load'}</div>`;
+      }
+    }
+
+    loadArtworks();
+
+    // ----- 表单提交 -----
+    const artworkForm = document.getElementById('artworkForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    artworkForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const title = document.getElementById('title').value.trim();
+      const tags = document.getElementById('tags').value.trim();
+      const description = document.getElementById('description').value.trim();
+
+      if (!title || !currentImageData) {
+        showToast(t.toastFillRequired, true);
+        return;
+      }
+
+      submitBtn.disabled = true;
+      const originalText = document.getElementById('btnPublishText').textContent;
+      document.getElementById('btnPublishText').textContent = t.publishing;
+
+      try {
+        // 压缩图片以节省 Firestore 空间 (Firestore 单文档上限 1MB)
+        const compressedImage = await compressImage(currentImageData, 800, 0.7);
+
+        await addDoc(collection(db, "artworks"), {
+          title: title,
+          tags: tags,
+          description: description,
+          imageUrl: compressedImage,
+          createdAt: serverTimestamp(),
+          date: new Date().toISOString().split('T')[0]
+        });
+
+        showToast(t.toastSuccess);
+
+        // 重置表单
+        artworkForm.reset();
+        currentImageData = null;
+        previewImg.style.display = 'none';
+        previewImg.src = '';
+        uploadPlaceholder.style.display = 'block';
+        uploadArea.classList.remove('has-image');
+
+        // 刷新列表
+        loadArtworks();
+      } catch (err) {
+        console.error('发布失败:', err);
+        showToast(t.toastError, true);
+      } finally {
+        submitBtn.disabled = false;
+        document.getElementById('btnPublishText').textContent = originalText;
+      }
+    });
+
+    // 图片压缩函数 (返回 base64)
+    function compressImage(base64Str, maxWidth = 800, quality = 0.7) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.src = base64Str;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxWidth) {
+            height = Math.round((maxWidth / width) * height);
+            width = maxWidth;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = () => resolve(base64Str); // 失败则返回原图
+      });
+    }
+
+    // 初始化图标
+    window.addEventListener('load', () => {
+      renderIcons();
+      setTimeout(renderIcons, 300);
+    });
+
+    // 语言指示徽章
+    document.getElementById('langBadge').addEventListener('click', () => {
+      // 简单刷新页面即可切换语言（取决于浏览器语言）
+      location.reload();
+    });
+  </script>
+</body>
+</html>
