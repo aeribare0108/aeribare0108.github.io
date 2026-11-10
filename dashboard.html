@@ -3,15 +3,650 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>NITOJU Studio · 稿件展示</title>
-  <link rel="icon" href="nitoju.png" type="image/png">
-  <!-- 使用 Lucide 图标库 (通过 CDN 动态加载) -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Firebase SDK (兼容版本) -->
+  <title>NITOJU · 稿件展示</title>
+  <!-- Favicon & Icons -->
+  <link rel="icon" type="image/png" href="nitoju.png">
+  <link rel="apple-touch-icon" href="nitoju.png">
+  <!-- Font & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background: #fff6f9;
+      color: #5a3e4b;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* 禁用选中/右键 */
+    * {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* 粉白配色变量 */
+    :root {
+      --pink-soft: #ffe4ec;
+      --pink-baby: #ffc1d4;
+      --pink-deep: #ff9eb5;
+      --pink-accent: #ff7a9e;
+      --white: #ffffff;
+      --shadow: 0 8px 20px rgba(255, 158, 181, 0.15);
+      --radius-card: 28px;
+      --radius-btn: 40px;
+    }
+
+    /* 滚动条可爱化 */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--pink-soft);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--pink-baby);
+      border-radius: 10px;
+    }
+
+    /* 主容器 */
+    .app {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 20px 20px 40px;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* 顶部导航 */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: var(--shadow);
+      background: white;
+    }
+
+    .studio-name {
+      font-weight: 700;
+      font-size: 1.6rem;
+      letter-spacing: -0.5px;
+      color: #bd5f7a;
+      text-shadow: 2px 2px 0 #ffe4ec;
+    }
+
+    .studio-name span {
+      font-weight: 400;
+      font-size: 1rem;
+      color: #b38b9a;
+      margin-left: 6px;
+    }
+
+    .lang-switch {
+      display: flex;
+      gap: 8px;
+      background: white;
+      padding: 4px 8px;
+      border-radius: 40px;
+      box-shadow: var(--shadow);
+      align-items: center;
+    }
+
+    .lang-btn {
+      background: transparent;
+      border: none;
+      font-family: 'Quicksand', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 8px 16px;
+      border-radius: 30px;
+      cursor: pointer;
+      color: #aa7a8a;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .lang-btn i {
+      font-size: 0.9rem;
+      color: #ff9eb5;
+    }
+
+    .lang-btn.active {
+      background: var(--pink-baby);
+      color: #4a2e38;
+      box-shadow: 0 2px 8px rgba(255, 158, 181, 0.4);
+    }
+
+    .lang-btn.active i {
+      color: #4a2e38;
+    }
+
+    /* 仪表板布局 — 左右两栏 */
+    .dashboard-layout {
+      display: flex;
+      gap: 28px;
+      align-items: flex-start;
+    }
+
+    /* 左侧稿件展示区 */
+    .feed-section {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .feed-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .feed-title {
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: #9e5f74;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .feed-title i {
+      color: var(--pink-deep);
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    /* 稿件卡片 */
+    .art-card {
+      background: white;
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: transform 0.2s ease, box-shadow 0.2s;
+      cursor: pointer;
+      border: 2px solid #fff0f4;
+      display: flex;
+      flex-direction: column;
+      height: fit-content;
+    }
+
+    .art-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 16px 30px rgba(255, 158, 181, 0.25);
+      border-color: var(--pink-baby);
+    }
+
+    .card-img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      background: #ffeef3;
+      display: block;
+    }
+
+    .card-body {
+      padding: 16px 18px 18px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-title {
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #662e40;
+      margin-bottom: 6px;
+      word-break: break-word;
+    }
+
+    .card-desc {
+      font-size: 0.9rem;
+      color: #9a7b88;
+      margin-bottom: 12px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      flex: 1;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .tag-badge {
+      background: var(--pink-soft);
+      color: #b1526e;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 30px;
+      border: 1px solid #ffdae5;
+    }
+
+    /* 右侧联系卡片 */
+    .contact-side {
+      width: 260px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      position: sticky;
+      top: 20px;
+    }
+
+    .contact-card {
+      background: white;
+      border-radius: 32px;
+      padding: 22px 18px;
+      box-shadow: var(--shadow);
+      border: 2px solid #ffe4ec;
+      text-align: center;
+    }
+
+    .contact-card h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #b1526e;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .contact-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 14px 0;
+      border-radius: var(--radius-btn);
+      border: none;
+      font-family: 'Quicksand', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 12px;
+      background: var(--pink-soft);
+      color: #933f58;
+      box-shadow: 0 4px 10px rgba(255, 158, 181, 0.2);
+    }
+
+    .contact-btn i {
+      font-size: 1.2rem;
+    }
+
+    .contact-btn.fb {
+      background: #ffe4ec;
+      color: #a5425f;
+    }
+
+    .contact-btn.tip {
+      background: #ffd9e2;
+      color: #7b3448;
+    }
+
+    .contact-btn:hover {
+      transform: scale(1.02);
+      filter: brightness(0.98);
+    }
+
+    .contact-btn:active {
+      transform: scale(0.98);
+    }
+
+    .qr-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 220, 230, 0.7);
+      backdrop-filter: blur(6px);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .qr-modal.show {
+      display: flex;
+    }
+
+    .qr-box {
+      background: white;
+      border-radius: 40px;
+      padding: 28px 24px;
+      max-width: 340px;
+      width: 100%;
+      box-shadow: 0 30px 40px rgba(255, 158, 181, 0.3);
+      text-align: center;
+      border: 3px solid var(--pink-baby);
+      position: relative;
+    }
+
+    .qr-box h4 {
+      font-weight: 700;
+      color: #ac4b67;
+      margin-bottom: 16px;
+      font-size: 1.3rem;
+    }
+
+    .qr-box img {
+      width: 100%;
+      max-width: 220px;
+      border-radius: 20px;
+      margin: 10px 0 16px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+    }
+
+    .close-qr {
+      background: var(--pink-baby);
+      border: none;
+      color: #5e2f3f;
+      font-weight: 700;
+      padding: 10px 22px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-family: 'Quicksand', sans-serif;
+      font-size: 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: 0.2s;
+    }
+
+    .close-qr:hover {
+      background: #ffb0c8;
+    }
+
+    /* 加载状态 / 空状态 */
+    .empty-message {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 48px 20px;
+      background: white;
+      border-radius: 40px;
+      color: #b38b9a;
+      font-weight: 600;
+      font-size: 1.1rem;
+      border: 2px dashed #ffd0de;
+    }
+
+    .empty-message i {
+      font-size: 2.4rem;
+      color: var(--pink-baby);
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    /* 管理页面样式 (admin) 但这里 dashboard 只是展示，admin 单独写也行，但按照需求 dashboard 为主 */
+    /* 但用户说“admin 是发布作品的网站”，本文件是 dashboard 所以只放展示 + 联系；但用户又说“admin默认登录”，所以我们需要单独一个admin页面？题目：分成dashboard.html和admin.html，但只是给了一个文件？其实要输出两个文件的HTML？但通常一个HTML不能同时两个页面？我们可以用两个 <div> 切换？更合理是输出两个独立的HTML。但用户要求“制作一个个人博客稿件展示网站分成dashboard.html和admin.html”，但是这是一个代码块，我最好生成两个单独HTML？但回答只能是一个区块。我可以把dashboard和admin合在一个HTML用两种视图？但题目明确“两个网站”，我认为需要输出两个独立的HTML文件。但回答只能是一个代码块，常见做法是给两个html，但是最好在注释或者结构上分离。更合理：我制作一个文件包含dashboard与admin的切换？不行，admin需要登录且独立。
+    /* 为了符合实际，我将提供两个独立的完整HTML？但消息只能发一个代码块。但是我可以把dashboard和admin整合在一个HTML中通过hash切换？但说“分成dashboard.html和admin.html”，我可以在代码里用两个不同的部分？但那样用户需要复制两份。或者我用一个HTML同时包含两个模式？更简单：给出两个HTML文件的代码，分别用<script>包裹？不太合适。
+    /* 我决定：生成一个HTML文件（dashboard.html）+ 完整admin功能用另一套代码？但回答只能一个区块。所以我把dashboard.html和admin.html的代码合在一起，但用注释分隔，用户可自己拆成两个文件。但更稳妥：我提供完整的dashboard.html（展示稿件+联系）和完整的admin.html（发布管理）。因为用户明确“两个网站”，我可以在同一个回答里放两个代码块？但官方提问说“帮我制作...分成dashboard.html和admin.html”，然后给了firebase配置。我打算用两个独立HTML提供，但是可能超出长度。但是模型有输出限制，可以两个都写，但篇幅较大。精简一下。
+    /* 其实用户要求 dashboard 有联系按钮，admin 有发布界面，并且两者都是粉白UI、双语。我会先实现 dashboard 完整版本，再实现 admin 完整版本，用两个代码块输出。但为避免混乱，我用一个回答里面包含两个代码块。 */
+
+    /* 下面直接实现 dashboard.html 的样式和结构，然后之后给出 admin.html 的代码。 */
+
+    /* 响应式 */
+    @media (max-width: 800px) {
+      .dashboard-layout {
+        flex-direction: column;
+      }
+
+      .contact-side {
+        width: 100%;
+        position: static;
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+
+      .contact-card {
+        flex: 1;
+        min-width: 150px;
+      }
+
+      .top-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .lang-switch {
+        align-self: flex-end;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .app {
+        padding: 16px 12px 32px;
+      }
+
+      .studio-name {
+        font-size: 1.3rem;
+      }
+
+      .logo-icon {
+        width: 36px;
+        height: 36px;
+      }
+
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .contact-side {
+        flex-direction: column;
+      }
+    }
+
+    /* 隐藏的 i18n 元素控制 */
+    .i18n-en, .i18n-zh {
+      display: none;
+    }
+
+    body[data-lang="en"] .i18n-en {
+      display: inline-block;
+    }
+
+    body[data-lang="zh"] .i18n-zh {
+      display: inline-block;
+    }
+
+    /* 用于块级元素 */
+    .i18n-block {
+      display: none;
+    }
+
+    body[data-lang="en"] .i18n-block.i18n-en {
+      display: block;
+    }
+
+    body[data-lang="zh"] .i18n-block.i18n-zh {
+      display: block;
+    }
+
+    /* 卡片内不显示语言切换的冗余 */
+    .inline-i18n {
+      display: inline;
+    }
+
+    body[data-lang="en"] .inline-i18n.zh {
+      display: none;
+    }
+
+    body[data-lang="zh"] .inline-i18n.en {
+      display: none;
+    }
+  </style>
+</head>
+<body data-lang="en">
+  <div class="app">
+    <!-- 顶部 -->
+    <div class="top-bar">
+      <div class="logo-area">
+        <img src="nitoju.png" alt="NITOJU" class="logo-icon">
+        <div class="studio-name">NITOJU <span>Studio</span></div>
+      </div>
+      <div class="lang-switch">
+        <button class="lang-btn" data-lang-btn="en"><i class="fas fa-globe"></i> EN</button>
+        <button class="lang-btn" data-lang-btn="zh"><i class="fas fa-language"></i> 中文</button>
+      </div>
+    </div>
+
+    <!-- Dashboard 布局 -->
+    <div class="dashboard-layout">
+      <!-- 左侧展示区 -->
+      <div class="feed-section">
+        <div class="feed-header">
+          <div class="feed-title">
+            <i class="fas fa-paint-brush"></i>
+            <span class="i18n-en i18n-block">Artworks</span>
+            <span class="i18n-zh i18n-block">稿件展示</span>
+          </div>
+          <div style="font-size:0.9rem; color:#c28b9c;">
+            <i class="fas fa-heart" style="color:#ff9eb5;"></i>
+            <span id="work-count">0</span>
+            <span class="i18n-en inline-i18n">works</span>
+            <span class="i18n-zh inline-i18n">件作品</span>
+          </div>
+        </div>
+        <div class="card-grid" id="artGrid">
+          <!-- 动态加载卡片，初始为空 -->
+          <div class="empty-message" id="emptyPlaceholder">
+            <i class="fas fa-cloud-moon"></i>
+            <span class="i18n-en i18n-block">No artworks yet. Check back soon~</span>
+            <span class="i18n-zh i18n-block">还没有作品哦，敬请期待~</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧联系卡片 -->
+      <div class="contact-side">
+        <div class="contact-card">
+          <h3>
+            <i class="fas fa-comment-dots" style="color:#ff9eb5;"></i>
+            <span class="i18n-en i18n-block">Contact</span>
+            <span class="i18n-zh i18n-block">联系</span>
+          </h3>
+          <!-- Facebook 按钮 -->
+          <button class="contact-btn fb" id="fbBtn">
+            <i class="fab fa-facebook-f"></i>
+            <span class="i18n-en">Facebook</span>
+            <span class="i18n-zh">Facebook</span>
+          </button>
+          <!-- 打赏按钮 -->
+          <button class="contact-btn tip" id="tipBtn">
+            <i class="fas fa-gift"></i>
+            <span class="i18n-en">Support</span>
+            <span class="i18n-zh">打赏</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR 弹窗 -->
+  <div class="qr-modal" id="qrModal">
+    <div class="qr-box">
+      <h4>
+        <i class="fas fa-qrcode" style="color:#ff9eb5;"></i>
+        <span class="i18n-en inline-i18n">Scan to support</span>
+        <span class="i18n-zh inline-i18n">扫码打赏</span>
+      </h4>
+      <img src="payment.jpg" alt="Payment QR" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'200\' viewBox=\'0 0 200 200\'%3E%3Crect width=\'200\' height=\'200\' fill=\'%23ffe4ec\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' font-size=\'16\' text-anchor=\'middle\' fill=\'%23b1526e\'%3Epayment.jpg%3C/text%3E%3C/svg%3E">
+      <button class="close-qr" id="closeQrBtn">
+        <i class="fas fa-times"></i>
+        <span class="i18n-en">Close</span>
+        <span class="i18n-zh">关闭</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Firebase 和逻辑 -->
   <script type="module">
-    // 配置 Firebase (使用您的配置)
+    // 禁用右键和 F12
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'F12' || e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C'))) {
+        e.preventDefault();
+        return false;
+      }
+      // 禁用 ctrl+shift+i, ctrl+shift+j, ctrl+u
+      if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) {
+        e.preventDefault();
+      }
+      if (e.ctrlKey && e.key === 'u') {
+        e.preventDefault();
+      }
+    });
+
+    // 语言初始化
+    const userLang = navigator.language || navigator.userLanguage;
+    const isChinese = userLang.startsWith('zh');
+    document.body.dataset.lang = isChinese ? 'zh' : 'en';
+
+    // 语言切换按钮
+    document.querySelectorAll('[data-lang-btn]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const lang = btn.dataset.langBtn;
+        document.body.dataset.lang = lang;
+        updateLangButtonActive(lang);
+      });
+    });
+
+    function updateLangButtonActive(lang) {
+      document.querySelectorAll('[data-lang-btn]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.langBtn === lang);
+      });
+    }
+    updateLangButtonActive(document.body.dataset.lang);
+
+    // Firebase 导入
     import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
+    import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCYXQTu_ZMq37kCbSBZUgD1twr5QvKLunM",
@@ -26,598 +661,113 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // 将 db 暴露到全局，方便后续使用（或者也可以在模块内使用）
-    window.firestoreDB = db;
-  </script>
-  <style>
-    /* ----- 全局样式 & 粉白可爱风 ----- */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
-    }
+    // 作品集引用
+    const worksRef = collection(db, 'artworks');
+    const worksQuery = query(worksRef, orderBy('createdAt', 'desc'));
 
-    body {
-      background-color: #fff5f9; /* 粉白背景 */
-      color: #5a3e4b;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+    let workCount = 0;
+    const artGrid = document.getElementById('artGrid');
+    const emptyPlaceholder = document.getElementById('emptyPlaceholder');
+    const workCountSpan = document.getElementById('work-count');
 
-    /* 禁止右键/f12已经用js处理，这里不做额外样式 */
+    // 监听实时更新
+    onSnapshot(worksQuery, (snapshot) => {
+      workCount = snapshot.size;
+      workCountSpan.textContent = workCount;
 
-    /* 主容器 */
-    .app {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 1.5rem 1.2rem;
-      flex: 1;
-      width: 100%;
-    }
-
-    /* 头部 */
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-
-    .logo-area {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-    }
-
-    .logo-area img {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      object-fit: cover;
-      box-shadow: 0 6px 12px rgba(255, 182, 193, 0.3);
-    }
-
-    .studio-name {
-      font-size: 1.8rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      background: linear-gradient(145deg, #ff8da1, #fdc0d0);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-shadow: 0 4px 8px rgba(255, 200, 210, 0.4);
-    }
-
-    .lang-switch {
-      background: white;
-      border-radius: 50px;
-      padding: 0.4rem 0.8rem;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      box-shadow: 0 4px 10px rgba(255, 190, 200, 0.25);
-      font-size: 0.95rem;
-      font-weight: 500;
-      color: #c95b7a;
-      border: 1px solid #ffe2ea;
-      transition: all 0.2s;
-    }
-
-    .lang-switch i {
-      font-size: 1.1rem;
-      color: #ff8da1;
-    }
-
-    /* 布局：左侧稿件 + 右侧联系卡 */
-    .main-layout {
-      display: flex;
-      gap: 2rem;
-      flex-wrap: wrap;
-    }
-
-    .gallery-section {
-      flex: 2;
-      min-width: 280px;
-    }
-
-    .contact-section {
-      flex: 1;
-      min-width: 260px;
-      max-width: 340px;
-    }
-
-    /* 稿件网格 */
-    .gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 1.5rem;
-      margin-top: 1rem;
-    }
-
-    .art-card {
-      background: white;
-      border-radius: 28px;
-      overflow: hidden;
-      box-shadow: 0 12px 28px rgba(255, 170, 190, 0.18);
-      transition: transform 0.25s, box-shadow 0.25s;
-      border: 1px solid #ffeef3;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .art-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 18px 32px rgba(255, 140, 170, 0.25);
-    }
-
-    .art-image {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-      background-color: #fce4ec;
-      display: block;
-    }
-
-    .art-info {
-      padding: 1rem 1rem 1.2rem;
-    }
-
-    .art-tag {
-      display: inline-block;
-      background: #ffe2ea;
-      color: #b34a66;
-      font-size: 0.7rem;
-      font-weight: 600;
-      padding: 0.25rem 0.9rem;
-      border-radius: 40px;
-      letter-spacing: 0.3px;
-      margin-bottom: 0.5rem;
-      border: 1px solid #ffc1d0;
-    }
-
-    .art-title {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: #4e2e3a;
-      margin-bottom: 0.3rem;
-      line-height: 1.3;
-    }
-
-    .art-desc {
-      font-size: 0.9rem;
-      color: #a16b7c;
-      line-height: 1.4;
-      margin-bottom: 0.5rem;
-      word-break: break-word;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .art-meta {
-      font-size: 0.7rem;
-      color: #d99aab;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-top: 0.6rem;
-    }
-
-    /* 联系卡片 */
-    .contact-card {
-      background: white;
-      border-radius: 32px;
-      padding: 1.8rem 1.5rem;
-      box-shadow: 0 18px 32px rgba(255, 180, 200, 0.2);
-      border: 1px solid #ffe6ee;
-      position: sticky;
-      top: 1.5rem;
-    }
-
-    .contact-title {
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: #ff8da1;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
-      letter-spacing: -0.3px;
-    }
-
-    .contact-item {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      background: #fff7fa;
-      border-radius: 60px;
-      padding: 0.8rem 1.2rem;
-      margin-bottom: 1rem;
-      transition: all 0.2s;
-      border: 1px solid #ffdae5;
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .contact-item:hover {
-      background: #ffeef3;
-      border-color: #ffb8cc;
-      transform: scale(1.01);
-    }
-
-    .contact-icon {
-      width: 40px;
-      height: 40px;
-      background: #ffe2ea;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ff6f91;
-      font-size: 1.4rem;
-    }
-
-    .contact-text {
-      font-weight: 600;
-      color: #6b3d4f;
-      flex: 1;
-    }
-
-    .qr-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      background: #fff7fa;
-      border-radius: 60px;
-      padding: 0.7rem 1.2rem;
-      margin-bottom: 0.8rem;
-      border: 1px solid #ffdae5;
-    }
-
-    .qr-wrapper img {
-      width: 58px;
-      height: 58px;
-      border-radius: 16px;
-      object-fit: cover;
-      border: 2px solid white;
-      box-shadow: 0 4px 12px rgba(255, 160, 180, 0.25);
-    }
-
-    .qr-label {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #6b3d4f;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
-
-    .qr-label i {
-      color: #ff8da1;
-    }
-
-    /* 加载中 / 空状态 */
-    .loading, .empty {
-      text-align: center;
-      padding: 3rem 1rem;
-      background: #fff0f5;
-      border-radius: 36px;
-      color: #c08398;
-      font-weight: 500;
-    }
-
-    .loading i {
-      animation: spin 1s infinite linear;
-      display: inline-block;
-      margin-right: 8px;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* 手机适配 */
-    @media (max-width: 700px) {
-      .app { padding: 1rem; }
-      .studio-name { font-size: 1.4rem; }
-      .logo-area img { width: 36px; height: 36px; }
-      .header { margin-bottom: 1.2rem; }
-      .main-layout { flex-direction: column; gap: 1.5rem; }
-      .contact-card { position: static; }
-      .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
-      .art-image { height: 150px; }
-      .art-title { font-size: 1rem; }
-      .contact-section { max-width: 100%; }
-    }
-
-    @media (max-width: 400px) {
-      .gallery-grid { grid-template-columns: 1fr; }
-    }
-
-    /* 隐藏元素 */
-    .hidden { display: none; }
-
-    /* 版权footer */
-    .footer {
-      text-align: center;
-      padding: 1.5rem;
-      color: #d29eb0;
-      font-size: 0.8rem;
-      border-top: 1px solid #ffe2ea;
-      margin-top: 2rem;
-    }
-  </style>
-</head>
-<body>
-  <div class="app">
-    <!-- 头部区域 -->
-    <header class="header">
-      <div class="logo-area">
-        <img src="nitoju.png" alt="NITOJU Studio logo">
-        <span class="studio-name">NITOJU Studio</span>
-      </div>
-      <div class="lang-switch" id="langIndicator">
-        <i data-lucide="languages"></i>
-        <span id="langText">EN</span>
-      </div>
-    </header>
-
-    <!-- 主布局: 稿件 + 联系 -->
-    <div class="main-layout">
-      <!-- 左侧稿件展示 -->
-      <section class="gallery-section">
-        <h2 style="font-size:1.4rem; display:flex; align-items:center; gap:0.5rem; color:#b34a66; margin-bottom:1rem;">
-          <i data-lucide="image" style="color:#ff8da1;"></i>
-          <span id="galleryTitle">全部作品</span>
-        </h2>
-        <div id="galleryContainer" class="gallery-grid">
-          <!-- 动态加载稿件卡片 -->
-          <div class="loading" id="loadingIndicator">
-            <i data-lucide="loader-2"></i> <span id="loadingText">加载作品中…</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- 右侧联系卡片 -->
-      <aside class="contact-section">
-        <div class="contact-card">
-          <div class="contact-title">
-            <i data-lucide="message-circle-heart"></i>
-            <span id="contactTitle">联系 & 打赏</span>
-          </div>
-          <!-- Facebook -->
-          <a href="https://www.facebook.com/ari.bare.86866?rdid=1EaUKUDKJYvCWBqP&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F19JhjNVtCH%2F#" 
-             target="_blank" class="contact-item">
-            <div class="contact-icon"><i data-lucide="facebook"></i></div>
-            <span class="contact-text" id="fbLabel">Facebook</span>
-          </a>
-          <!-- 打赏 QR -->
-          <div class="qr-wrapper">
-            <img src="payment.jpg" alt="打赏二维码">
-            <div class="qr-label">
-              <i data-lucide="qr-code"></i>
-              <span id="qrLabel">扫码打赏</span>
-            </div>
-          </div>
-          <!-- 额外装饰 -->
-          <div style="margin-top:1rem; text-align:center; font-size:0.8rem; color:#dfa6b8;">
-            <i data-lucide="heart" style="width:14px; height:14px;"></i>
-            <span id="thanksText">感谢支持</span>
-          </div>
-        </div>
-      </aside>
-    </div>
-  </div>
-  <footer class="footer">
-    <span id="footerText">© 2025 NITOJU Studio · 可爱稿件展示</span>
-  </footer>
-
-  <!-- 主要脚本：国际化、加载Firestore、防右键/F12 -->
-  <script type="module">
-    // ----- 1. 语言检测与国际化 -----
-    const userLang = navigator.language || navigator.userLanguage;
-    const isChinese = userLang.toLowerCase().startsWith('zh');
-    // 根据语言设定文本
-    const i18n = {
-      zh: {
-        galleryTitle: '全部作品',
-        loading: '加载作品中…',
-        empty: '还没有稿件哦，敬请期待✨',
-        contactTitle: '联系 & 打赏',
-        fbLabel: 'Facebook',
-        qrLabel: '扫码打赏',
-        thanksText: '感谢支持',
-        footerText: '© 2025 NITOJU Studio · 可爱稿件展示',
-        langIndicator: '中文',
-        // 卡片内无需额外翻译，标签/标题来自数据
-      },
-      en: {
-        galleryTitle: 'All Works',
-        loading: 'Loading works…',
-        empty: 'No artworks yet. Stay tuned ✨',
-        contactTitle: 'Contact & Support',
-        fbLabel: 'Facebook',
-        qrLabel: 'Scan to tip',
-        thanksText: 'Thank you',
-        footerText: '© 2025 NITOJU Studio · Cute artworks',
-        langIndicator: 'EN',
-      }
-    };
-
-    const t = isChinese ? i18n.zh : i18n.en;
-    // 应用文本
-    document.getElementById('galleryTitle').textContent = t.galleryTitle;
-    document.getElementById('loadingText').textContent = t.loading;
-    document.getElementById('contactTitle').textContent = t.contactTitle;
-    document.getElementById('fbLabel').textContent = t.fbLabel;
-    document.getElementById('qrLabel').textContent = t.qrLabel;
-    document.getElementById('thanksText').textContent = t.thanksText;
-    document.getElementById('footerText').textContent = t.footerText;
-    document.getElementById('langText').textContent = t.langIndicator;
-    document.documentElement.lang = isChinese ? 'zh' : 'en';
-
-    // ----- 2. 图标渲染 (Lucide) -----
-    function renderIcons() {
-      if (window.lucide) {
-        lucide.createIcons();
+      // 清空网格，但保留 empty 占位元素
+      artGrid.innerHTML = '';
+      if (workCount === 0) {
+        emptyPlaceholder.style.display = 'block';
+        artGrid.appendChild(emptyPlaceholder);
       } else {
-        // 若未加载完成，等一秒重试
-        setTimeout(renderIcons, 100);
-      }
-    }
-    renderIcons();
-
-    // ----- 3. 禁用右键和 F12 (以及开发者工具快捷键) -----
-    document.addEventListener('contextmenu', (e) => e.preventDefault());
-    document.addEventListener('keydown', (e) => {
-      // 禁用 F12
-      if (e.key === 'F12' || e.keyCode === 123) {
-        e.preventDefault();
-        return false;
-      }
-      // 禁用 Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+Shift+C / Ctrl+U
-      if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) {
-        e.preventDefault();
-        return false;
-      }
-      if (e.ctrlKey && (e.key === 'u' || e.key === 'U')) {
-        e.preventDefault();
-        return false;
-      }
-    });
-
-    // ----- 4. 从 Firestore 加载作品数据 -----
-    const galleryContainer = document.getElementById('galleryContainer');
-    const loadingIndicator = document.getElementById('loadingIndicator');
-
-    // 等待 firebase 模块初始化完成 (db 挂载在 window)
-    async function loadArtworks() {
-      try {
-        // 等待一小段时间确保 window.firestoreDB 存在 (模块加载异步)
-        if (!window.firestoreDB) {
-          await new Promise(resolve => setTimeout(resolve, 600));
-        }
-        const db = window.firestoreDB;
-        if (!db) throw new Error('Firestore not initialized');
-
-        // 引入所需的 Firestore 函数 (动态导入，因为上面已经 import 过但未暴露)
-        const { collection, getDocs, query, orderBy } = await import("https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js");
-        
-        // 查询作品集合 (假设集合名为 "artworks"，您可以根据实际修改)
-        const artworksRef = collection(db, "artworks");
-        // 按时间降序，如果有 createdAt 字段 (如果没有就忽略排序)
-        let q;
-        try {
-          q = query(artworksRef, orderBy("createdAt", "desc"));
-        } catch (e) {
-          // 没有 createdAt 字段或索引时直接获取全部
-          q = query(artworksRef);
-        }
-        const snapshot = await getDocs(q);
-
-        // 隐藏加载状态
-        if (loadingIndicator) loadingIndicator.style.display = 'none';
-
-        if (snapshot.empty) {
-          // 显示空状态
-          galleryContainer.innerHTML = `
-            <div class="empty" style="grid-column:1/-1;">
-              <i data-lucide="image-off" style="width:40px;height:40px;color:#ffb0c3;margin-bottom:0.8rem;"></i>
-              <p>${t.empty}</p>
-            </div>
-          `;
-          renderIcons();
-          return;
-        }
-
-        // 清空容器
-        galleryContainer.innerHTML = '';
-
-        // 遍历文档，生成卡片
-        snapshot.forEach((doc) => {
+        emptyPlaceholder.style.display = 'none';
+        snapshot.forEach(doc => {
           const data = doc.data();
-          // 字段映射: title, description, tags, imageUrl, createdAt
-          const title = data.title || (isChinese ? '无标题' : 'Untitled');
-          const description = data.description || data.details || (isChinese ? '暂无描述' : 'No description');
-          const tags = data.tags || (isChinese ? '未分类' : 'Uncategorized');
-          const imageUrl = data.imageUrl || 'https://via.placeholder.com/400x300?text=No+Image'; // 占位图
-          // 如果图片为空或无效也可以使用占位
-          const finalImage = imageUrl.trim() !== '' ? imageUrl : 'https://via.placeholder.com/400x300?text=No+Image';
-
-          // 构建卡片 HTML (使用 innerHTML 方式)
-          const card = document.createElement('div');
-          card.className = 'art-card';
-          // 转义 HTML 特殊字符 (简单处理)
-          const safeTitle = title.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-          const safeDesc = description.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-          const safeTags = tags.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-          card.innerHTML = `
-            <img class="art-image" src="${finalImage}" alt="${safeTitle}" loading="lazy" onerror="this.src='https://via.placeholder.com/400x300?text=Image+Error'">
-            <div class="art-info">
-              <div class="art-tag">${safeTags}</div>
-              <div class="art-title">${safeTitle}</div>
-              <div class="art-desc">${safeDesc}</div>
-              <div class="art-meta">
-                <i data-lucide="calendar" style="width:14px;height:14px;"></i>
-                <span>${data.date || ''}</span>
-              </div>
-            </div>
-          `;
-          galleryContainer.appendChild(card);
+          const card = createArtCard(data, doc.id);
+          artGrid.appendChild(card);
         });
-
-        // 重新渲染图标
-        renderIcons();
-      } catch (error) {
-        console.error('加载作品失败:', error);
-        if (loadingIndicator) loadingIndicator.style.display = 'none';
-        galleryContainer.innerHTML = `
-          <div class="empty" style="grid-column:1/-1;">
-            <i data-lucide="cloud-off" style="width:40px;height:40px;color:#ffb0c3;margin-bottom:0.8rem;"></i>
-            <p>${isChinese ? '加载失败，请稍后再试' : 'Failed to load. Please try again later.'}</p>
-          </div>
-        `;
-        renderIcons();
       }
-    }
-
-    // 启动加载
-    loadArtworks();
-
-    // 确保所有图标更新（若动态加载较慢，多次调用）
-    window.addEventListener('load', () => {
-      renderIcons();
-      // 以防第一次加载时lucide还没准备好
-      setTimeout(renderIcons, 300);
+    }, (error) => {
+      console.error('Error listening artworks:', error);
+      // 失败时显示空状态，但保留占位
+      artGrid.innerHTML = '';
+      emptyPlaceholder.style.display = 'block';
+      artGrid.appendChild(emptyPlaceholder);
     });
 
-    // 监听 lucide 加载完成
-    if (typeof lucide !== 'undefined') {
-      lucide.createIcons();
-    } else {
-      const checkLucide = setInterval(() => {
-        if (window.lucide) {
-          lucide.createIcons();
-          clearInterval(checkLucide);
-        }
-      }, 200);
-    }
-  </script>
+    // 创建卡片
+    function createArtCard(data, docId) {
+      const card = document.createElement('div');
+      card.className = 'art-card';
 
-  <!-- 确保 lucide 在加载完毕后渲染一次 (再次补充) -->
-  <script>
-    // 不依赖模块的简单图标刷新
-    window.addEventListener('load', function() {
-      if (window.lucide) {
-        lucide.createIcons();
+      // 图片
+      const img = document.createElement('img');
+      img.className = 'card-img';
+      img.src = data.imageUrl || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'300\' viewBox=\'0 0 400 300\'%3E%3Crect width=\'400\' height=\'300\' fill=\'%23ffe4ec\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' font-size=\'18\' text-anchor=\'middle\' fill=\'%23b1526e\'%3ENITOJU%3C/text%3E%3C/svg%3E';
+      img.alt = data.title || 'Artwork';
+      img.loading = 'lazy';
+      card.appendChild(img);
+
+      const body = document.createElement('div');
+      body.className = 'card-body';
+
+      const title = document.createElement('div');
+      title.className = 'card-title';
+      title.textContent = data.title || 'Untitled';
+      body.appendChild(title);
+
+      const desc = document.createElement('div');
+      desc.className = 'card-desc';
+      desc.textContent = data.description || '';
+      body.appendChild(desc);
+
+      const tagsDiv = document.createElement('div');
+      tagsDiv.className = 'card-tags';
+      if (data.tags && Array.isArray(data.tags)) {
+        data.tags.forEach(tag => {
+          const span = document.createElement('span');
+          span.className = 'tag-badge';
+          span.textContent = tag;
+          tagsDiv.appendChild(span);
+        });
+      }
+      body.appendChild(tagsDiv);
+
+      card.appendChild(body);
+      return card;
+    }
+
+    // Facebook 按钮跳转
+    document.getElementById('fbBtn').addEventListener('click', () => {
+      window.open('https://www.facebook.com/ari.bare.86866?rdid=1EaUKUDKJYvCWBqP&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F19JhjNVtCH%2F%23', '_blank');
+    });
+
+    // 打赏 QR 弹窗
+    const qrModal = document.getElementById('qrModal');
+    const tipBtn = document.getElementById('tipBtn');
+    const closeQrBtn = document.getElementById('closeQrBtn');
+
+    tipBtn.addEventListener('click', () => {
+      qrModal.classList.add('show');
+    });
+
+    closeQrBtn.addEventListener('click', () => {
+      qrModal.classList.remove('show');
+    });
+
+    qrModal.addEventListener('click', (e) => {
+      if (e.target === qrModal) {
+        qrModal.classList.remove('show');
       }
     });
+
+    // 防止右鍵/選中(已全局)
   </script>
+  <!-- 注意：Dashboard 已完成，admin 页面单独提供，但我们可以继续在同一文件内？不行，admin 需要单独管理界面。
+       但用户想要“admin.html”，所以我将在下一个代码块给出 admin.html。
+       由于回答长度，我先把admin的代码也合并展示？为了完整性，我直接给出第二个admin.html的代码块。
+       但我会确保dashboard和admin都符合要求。 
+  -->
 </body>
 </html>
